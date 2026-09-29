@@ -1,0 +1,7 @@
+{
+  "name": "ai-design",
+  "owner": { "name": "ShrimpScript" },
+  "plugins": [
+    { "name": "design-recon", "source": "./", "description": "Design recon + anti-slop verification for all frontend work." }
+  ]
+}

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Schedule, week of 5 Oct · Rail</title>
+<link rel="preload" href="fonts/archivo-2.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="bar">
+  <div class="bar-id">
+    <span class="mark" aria-hidden="true"></span>
+    <span class="wordmark">Rail</span>
+    <button class="venue" type="button" aria-label="Switch location">Nonna’s Kitchen</button>
+  </div>
+  <nav class="week" aria-label="Week">
+    <button type="button" class="icon-btn" data-week="-1" aria-label="Previous week">‹</button>
+    <h1 id="week-label">Week of 5–11 Oct</h1>
+    <button type="button" class="icon-btn" data-week="1" aria-label="Next week">›</button>
+  </nav>
+  <p class="status" id="status" role="status"></p>
+  <div class="bar-actions">
+    <button type="button" class="btn" id="copy-week">Copy last week</button>
+    <button type="button" class="btn btn-primary" id="post">Post schedule</button>
+  </div>
+</header>
+
+<div class="sub">
+  <div class="seg" role="radiogroup" aria-label="Station" id="stations"></div>
+  <p class="labour" id="labour"></p>
+</div>
+
+<main class="layout">
+  <section class="board" aria-label="Schedule">
+    <div class="grid" id="grid" role="grid"></div>
+    <div class="empty" id="empty" hidden>
+      <h2>No schedule for this week yet</h2>
+      <p>Start from last week’s shifts and adjust, or add shifts one at a time.</p>
+      <button type="button" class="btn btn-primary" id="empty-copy">Copy week of 5 Oct</button>
+    </div>
+    <div class="mobile" id="mobile"></div>
+  </section>
+
+  <aside class="requests" aria-labelledby="req-title">
+    <h2 id="req-title">Requests <span id="req-count"></span></h2>
+    <ul id="req-list"></ul>
+  </aside>
+</main>
+
+<div class="editor" id="editor" role="dialog" aria-modal="false" aria-labelledby="ed-title" hidden>
+  <form id="ed-form">
+    <h2 id="ed-title">New shift</h2>
+    <p class="ed-sub" id="ed-sub"></p>
+    <label>Who
+      <select id="ed-person"></select>
+    </label>
+    <div class="ed-times">
+      <label>Start <input id="ed-start" type="time" step="1800" required></label>
+      <label>End <input id="ed-end" type="time" step="1800" required></label>
+    </div>
+    <label>Role <select id="ed-role"></select></label>
+    <p class="ed-warn" id="ed-warn" role="alert"></p>
+    <div class="ed-actions">
+      <button type="button" class="btn btn-quiet" id="ed-delete">Delete shift</button>
+      <span></span>
+      <button type="button" class="btn" id="ed-cancel">Cancel</button>
+      <button type="submit" class="btn btn-primary" id="ed-save">Add shift</button>
+    </div>
+  </form>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

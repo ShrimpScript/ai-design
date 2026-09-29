@@ -1,0 +1,7 @@
+{
+  "name": "design-recon",
+  "version": "1.0.0",
+  "description": "Grounds frontend design in measured references: scrapes live sites for tokens, fonts, frames, flows, diagrams and motion, asks only the questions that matter, then lints and screenshots the result to remove AI-slop.",
+  "author": { "name": "ShrimpScript" },
+  "license": "MIT"
+}
