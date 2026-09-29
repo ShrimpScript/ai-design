@@ -53,3 +53,16 @@ export async function shotCapped(page, file, cap = 6000, quality = 70) {
   const vw = page.viewportSize().width;
   await page.screenshot({ path: file, type: 'jpeg', quality, fullPage: true, clip: { x: 0, y: 0, width: vw, height: Math.min(h, cap) } });
 }
+
+// Navigate, wait for quiet, and dismiss cookie banners (reject/decline before accept).
+export async function gotoSafe(page, url) {
+  const res = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(700);
+  // Dismiss obvious cookie banners so they don't pollute the frames (never accept tracking by default).
+  for (const name of [/reject all/i, /decline/i, /only necessary|necessary only|essential only/i, /^close$/i, /accept all|^accept$|got it|i agree/i]) {
+    const b = page.getByRole('button', { name }).first();
+    if (await b.isVisible({ timeout: 300 }).catch(() => false)) { await b.click({ timeout: 1500 }).catch(() => {}); await page.waitForTimeout(300); break; }
+  }
+  return res;
+}

@@ -7,6 +7,8 @@
 // or a `slop-ok` comment on the line. Exit 1 when any high-severity finding remains.
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import path from 'node:path';
+import { tierRegex } from './lib/fonts.mjs';
+const FONT_CTX = /(font-family\s*:|fontFamily|family=|next\/font\/(google|local)|@fontsource|font-\[|fontshare|--font[\w-]*\s*:)/i;
 
 const argv = process.argv.slice(2);
 const opt = (n) => { const i = argv.indexOf(n); return i < 0 ? null : argv[i + 1]; };
@@ -51,6 +53,7 @@ const isTintedBlack = (hex) => /^#(0[0-9a-f]0[0-9a-f]0[0-9a-f]|111111|111|0a0a0a
 const TEXT = /(>[^<>{}]*<)|(["'`][^"'`]*\s[^"'`]*["'`])|(^\s*[^<>{}=;:()]*[a-z]{3,}\s[a-z]{3,}[^<>{}=;]*$)/i;
 const rules = [
   { id: 'copy-cliche', sev: 3, text: true, re: /\b(unlock(ing)? (the|your)|unleash|elevate (your|the)|supercharge|revolutioni[sz]e|seamless(ly)?|effortless(ly)?|empower(s|ing)?|game[- ]chang|cutting[- ]edge|next[- ]gen(eration)?|harness(ing)? the power|to the next level|in today'?s (fast[- ]paced|digital)|world[- ]class|best[- ]in[- ]class|all[- ]in[- ]one (platform|solution)|streamline (your|the)|at your fingertips|transform (the way|your)|reimagine(d)?|built for the future|like never before|delve)\b/i, msg: 'Marketing cliché. Say what the product literally does, in the user\'s words.' },
+  { id: 'ai-buzz', sev: 2, text: true, re: /\b(ai[- ]powered|powered by (ai|gpt|llms?|machine learning)|(harness|leverag)\w* (the power of )?(ai|llms?)|ai[- ]driven (insights|solutions)|intelligent automation|smart insights|how can i help you today\??|your (ai|intelligent) (co-?pilot|assistant) for (everything|anything))\b/i, msg: '"AI" as the selling point. Say what it does and show it doing it.' },
   { id: 'placeholder', sev: 3, text: true, re: /\b(lorem ipsum|john doe|jane doe|acme( corp| inc)?|example@example\.com|your company|company name|feature (one|two|three|1|2|3)|123 main st)\b/i, msg: 'Placeholder content. Use real or realistic, subject-specific content.' },
   { id: 'fake-proof', sev: 3, text: true, re: /((trusted|loved|used) by [\d,.]+\s*[km+]*\+?\s*(users|teams|companies|developers|customers|creators)|join [\d,.]+\s*[km]?\+ |★★★★★|\b10x (faster|better)|99\.9+% (uptime|satisfaction))/i, msg: 'Invented social proof or metrics. Use real numbers from the brief or remove.' },
   { id: 'sparkle', sev: 2, re: /(✨|\bSparkles\b|sparkle-icon|lucide-sparkles|<Sparkle)/, msg: 'Sparkle iconography is the generic "AI" tell.' },
@@ -59,7 +62,9 @@ const rules = [
   { id: 'gradient-text', sev: 2, re: /(bg-clip-text[^"'`]*text-transparent|text-transparent[^"'`]*bg-clip-text|background-clip:\s*text)/, msg: 'Gradient text. Let type weight/scale carry emphasis.' },
   { id: 'glass', sev: 1, re: /(backdrop-blur(-\w+)?[^"'`]*bg-white\/(5|10|20)|bg-white\/(5|10|20)[^"'`]*backdrop-blur|backdrop-filter:\s*blur\(\s*(1[2-9]|[2-9]\d)px)/, msg: 'Glassmorphism panel. Only if the brief asks for it.' },
   { id: 'blob-decor', sev: 2, re: /(blur-(2|3)xl[^"'`]*rounded-full|rounded-full[^"'`]*blur-(2|3)xl|filter:\s*blur\((6\d|[7-9]\d|\d{3})px\))/, msg: 'Blurred gradient blob decoration.' },
-  { id: 'default-font', sev: 2, re: /(font-family:[^;]*|fontFamily[^,}]*|family=|next\/font\/google['"][^;]*|@fontsource(-variable)?\/)\b(Inter|Roboto|Poppins|Montserrat|Open[ +_-]?Sans|Lato|Space[ +_-]?Grotesk|Playfair[ +_-]?Display|DM[ +_-]?Sans|Instrument[ +_-]?Serif|Geist|Outfit|Plus[ +_-]?Jakarta)\b/i, msg: 'Default face. Keep only if chosen for this brief (add to lint-allow); see references/fonts.md.' },
+  { id: 'novelty-font', sev: 3, re: FONT_CTX, test: (l) => tierRegex('novelty').test(l), snip: (l) => l.match(tierRegex('novelty'))[0], msg: 'Genre-cliché face (cyber/sci-fi/pixel/party). Only if the brief is literally that genre; see references/fonts.md.' },
+  { id: 'default-font', sev: 2, re: FONT_CTX, test: (l) => tierRegex('default').test(l), snip: (l) => l.match(tierRegex('default'))[0], msg: 'AI-default face. Keep only if the brief chose it for a stated reason (lint-allow: default-font).' },
+  { id: 'saturated-font', sev: 1, re: FONT_CTX, test: (l) => tierRegex('saturated').test(l), snip: (l) => l.match(tierRegex('saturated'))[0], msg: 'Trend-saturated face (the usual "instead of Inter" picks). Prefer a less-worn option from references/fonts.md.' },
   { id: 'eyebrow', sev: 2, re: /(uppercase[^"'`\n]*tracking-(wide|wider|widest|\[0?\.\d+em\])|tracking-(wide|wider|widest)[^"'`\n]*uppercase|text-transform:\s*uppercase[^}]*letter-spacing:\s*0?\.(0[8-9]|[1-9]))/, msg: 'Tracked all-caps eyebrow label. Remove unless it carries information.', count: 3 },
   { id: 'arrow-cta', sev: 1, text: true, re: /(\w\s*(→|&rarr;|-&gt;)\s*(<\/|["'`]))/, msg: 'Arrow appended to link/button text.', count: 2 },
   { id: 'mid-dot', sev: 1, text: true, re: /\w\s·\s\w/, msg: 'Meta strings joined with middle dots.', count: 4 },
@@ -85,7 +90,7 @@ for (const file of files) {
       const m = line.match(r.re); if (!m) continue;
       if (r.text && !TEXT.test(line)) continue;
       if (r.test && !r.test(line, m)) continue;
-      (counts[r.id] ||= []).push({ file, line: i + 1, snip: m[0].slice(0, 70) });
+      (counts[r.id] ||= []).push({ file, line: i + 1, snip: (r.snip ? r.snip(line) : m[0]).slice(0, 70) });
     }
     for (const m of line.matchAll(/\brounded(-(sm|md|lg|xl|2xl|3xl|full|none|\[[^\]]+\]))?(?=[\s"'`])/g)) agg.radius[m[0]] = (agg.radius[m[0]] || 0) + 1;
     for (const m of line.matchAll(/border-radius:\s*([^;]+);/g)) agg.radius[m[1].trim()] = (agg.radius[m[1].trim()] || 0) + 1;
@@ -93,7 +98,7 @@ for (const file of files) {
     if (/grid-cols-3\b|repeat\(3,\s*(1fr|minmax)/.test(line)) agg.grid3++;
     if (/(h-1[02]|w-1[02]|size-1[02])[^"'`]*rounded-(lg|xl|2xl)[^"'`]*bg-\w+-(50|100|500\/10)/.test(line)) agg.iconTile++;
     for (const h of line.match(/#[0-9a-f]{6}\b|#[0-9a-f]{3}\b/gi) || []) {
-      if (isCream(h)) agg.cream++; if (isClay(h)) agg.clay++; if (isAcid(h)) agg.acid++; if (isTintedBlack(h)) agg.tinted++;
+      if (isCream(h) && /(^|[\s{;])(body|html|:root|main)\b[^{]*\{[^}]*background|--(bg|background|paper|surface|canvas|page|base|cream)[\w-]*\s*:|background(-color)?\s*:\s*#|bg-\[#/i.test(line) && !/(gate|pill|badge|tag|chip|callout|note|alert)/i.test(line)) agg.cream++; if (isClay(h)) agg.clay++; if (isAcid(h)) agg.acid++; if (isTintedBlack(h)) agg.tinted++;
     }
     if (/(zinc|neutral|stone|gray|slate)-950/.test(line)) agg.tinted++;
     if (/lime-(300|400)|#c6ff00|#ccff00|#d4ff00|#b8ff00|#39ff14/i.test(line)) agg.acid++;

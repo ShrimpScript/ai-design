@@ -10,8 +10,11 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import './lib/net.mjs';
-import { launch, newPage, settle, shotCapped } from './lib/pw.mjs';
+import { launch, newPage, settle, shotCapped, gotoSafe } from './lib/pw.mjs';
 import { contactSheet } from './lib/sheet.mjs';
+import { fontTier } from './lib/fonts.mjs';
+import { robotsAllows as robotsCheck } from './lib/robots.mjs';
+const robotsAllows = (u) => ROBOTS ? robotsCheck(u) : Promise.resolve(true);
 
 const argv = process.argv.slice(2);
 const flag = (n, d) => { const i = argv.indexOf(n); return i < 0 ? d : (argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[i + 1] : true); };
@@ -150,6 +153,7 @@ function extract() {
   const h1 = [...document.querySelectorAll('h1')].find(e => { const r = e.getBoundingClientRect(); return r.width > 2 && parseFloat(getComputedStyle(e).fontSize) >= 8; }), h1r = h1 && h1.getBoundingClientRect();
   const media = [...document.querySelectorAll('img, video, canvas, svg, picture, iframe, spline-viewer, lottie-player, dotlottie-player, rive-canvas')]
     .map(e => [e, e.getBoundingClientRect()]).filter(([, r]) => r.width >= 280 && r.height >= 160);
+  const heroMediaEls = media.filter(([e, r]) => r.top < H && r.bottom > 0 && !e.closest('nav,header,button')).map(([e]) => e);
   const heroMedia = media.filter(([, r]) => r.top < H && r.bottom > 0).slice(0, 3).map(([e, r]) => `${e.tagName.toLowerCase()} ${Math.round(r.width)}x${Math.round(r.height)}`);
 
   // Components: buttons, cards, inputs.
@@ -165,6 +169,28 @@ function extract() {
   const buttons = top(btn, 4);
   const cta = buttons[0] && btnEls[buttons[0][0]].find(e => e.getBoundingClientRect().top < H);
   if (cta) cta.setAttribute('data-recon-cta', '1');
+
+  // Hero anatomy: what the first screen is made of.
+  const hero = (() => {
+    if (!h1 || !h1r) return null;
+    const hfs = parseFloat(getComputedStyle(h1).fontSize);
+    const txt = (e) => (e.innerText || '').trim().replace(/\s+/g, ' ');
+    const near = visible.filter(([e, r]) => r.top < H * 1.05);
+    const sub = near.find(([e, r, cs]) => r.top >= h1r.bottom - 4 && r.top < h1r.bottom + 260 && !e.contains(h1) && parseFloat(cs.fontSize) < hfs * 0.6 && parseFloat(cs.fontSize) >= 13 && [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim().length > 30) && txt(e).length < 320);
+    const eyebrow = near.find(([e, r, cs]) => r.bottom <= h1r.top + 2 && r.bottom > h1r.top - 90 && parseFloat(cs.fontSize) < hfs * 0.5 && txt(e).length > 1 && txt(e).length < 48 && !e.closest('nav,header'));
+    const ctas = Object.values(btnEls).flat().filter(e => { const r = e.getBoundingClientRect(); return r.top > h1r.top - 20 && r.top < H && !e.closest('nav,header'); });
+    const rows = {};
+    for (const e of document.querySelectorAll('img,svg')) { const r = e.getBoundingClientRect(); if (r.height >= 14 && r.height <= 64 && r.width >= 40 && r.top > h1r.bottom && r.top < H * 1.7 && !e.closest('nav,header,button,a[class*=btn]')) (rows[Math.round(r.top / 8)] ||= []).push(e); }
+    const logos = Object.values(rows).some(v => v.length >= 4);
+    let media = 'none';
+    const m = heroMediaEls[0];
+    if (m) { const r = m.getBoundingClientRect(); media = `${m.tagName.toLowerCase()} ${r.left > h1r.left + h1r.width * 0.6 ? 'right of' : r.top >= h1r.bottom - 10 ? 'below' : r.width >= W * 0.9 ? 'behind' : 'beside'} headline`; }
+    let bgKind = 'solid';
+    for (let e = h1; e && e !== document.body; e = e.parentElement) { const c = getComputedStyle(e); if (c.backgroundImage !== 'none') { bgKind = c.backgroundImage.includes('gradient') ? 'gradient' : 'image'; break; } }
+    if ([...document.querySelectorAll('video,canvas')].some(v => { const r = v.getBoundingClientRect(); return r.top < H && r.width > W * 0.6; })) bgKind += ' + full-width video/canvas';
+    const sec = h1.closest('section,[class*=hero i],header') || h1.parentElement;
+    return { h1Words: txt(h1).split(' ').length, h1Lines: Math.round(h1r.height / (parseFloat(getComputedStyle(h1).lineHeight) || hfs * 1.1)), subChars: sub ? txt(sub[0]).length : 0, eyebrow: eyebrow ? txt(eyebrow[0]).slice(0, 40) + (getComputedStyle(eyebrow[0]).textTransform === 'uppercase' ? ' (caps)' : '') : null, ctas: ctas.length, ctaLabels: [...new Set(ctas.map(txt).filter(t => t && t.length <= 40))].slice(0, 3), logos, media, bg: bgKind, height: Math.round(sec.getBoundingClientRect().height), align: getComputedStyle(h1).textAlign };
+  })();
 
   const cardSig = {};
   for (const [el, r, cs] of visible) {
@@ -224,54 +250,17 @@ function extract() {
     layout: { container: top(widths, 3), grid, flex, header: header ? { h: Math.round(hr.height), position: hcs.position, bg: hex(hcs.backgroundColor), blur: hcs.backdropFilter !== 'none' ? hcs.backdropFilter : undefined } : null, h1: h1r ? { size: Math.round(parseFloat(getComputedStyle(h1).fontSize)), align: getComputedStyle(h1).textAlign, top: Math.round(h1r.top), width: Math.round(h1r.width) } : null, heroMedia, docH: document.documentElement.scrollHeight },
     components: { buttons, cards: top(cardSig, 3), counts: { buttons: document.querySelectorAll('button,[role=button]').length, inputs: document.querySelectorAll('input,textarea,select').length, tables: document.querySelectorAll('table').length, forms: document.forms.length, dialogs: document.querySelectorAll('dialog,[role=dialog]').length } },
     motion: { libs, transitions: top(trans, 6), durations: top(durations, 6), easing: top(easing, 5), keyframes: (() => { const g = {}; for (const k of keyframes) add(g, gen(k.name)); return Object.entries(g).map(([k, v]) => v > 1 ? `${k} ×${v}` : k).slice(0, 24); })(), keyframeSamples: (() => { const seen = new Set(); return keyframes.filter(k => !/^(spin|ping|pulse|bounce)$/.test(k.name) && !seen.has(gen(k.name)) && seen.add(gen(k.name))).sort((a, b) => (/transform|clip-path|filter|offset/.test(b.css) - /transform|clip-path|filter|offset/.test(a.css)) || a.css.length - b.css.length).slice(0, 3).map(k => k.css.slice(0, 170)); })(), running: top(animSummary, 8), runningTotal: anims.length, reducedMotion, scrollTimeline, viewTransitions },
-    art, ads,
+    art, ads, hero,
     copy: { h1: q('h1', 2), h2: q('h2', 6), ctas: [...new Set(Object.values(btnEls).flat().map(e => (e.innerText || '').trim().replace(/\s+/g, ' ')).filter(t => t && t.length < 40 && !/^(skip( to)?|previous|next|close|menu|toggle)\b/i.test(t)))].slice(0, 10), nav: q('header nav a, nav a', 14).filter(t => !/^skip to|keyboard shortcuts/i.test(t)).slice(0, 10) },
     links: [...document.querySelectorAll('a[href]')].map(a => ({ t: (a.innerText || '').trim().slice(0, 40), h: a.href })).filter(l => l.t && l.h.startsWith(location.origin)).slice(0, 300),
   };
 }
 
 // ---------------------------------------------------------------- helpers
-async function robotsAllows(url) {
-  if (!ROBOTS) return true;
-  try {
-    const u = new URL(url);
-    const res = await fetch(u.origin + '/robots.txt', { signal: AbortSignal.timeout(6000) });
-    if (!res.ok) return true;
-    // RFC 9309: consecutive user-agent lines form one group; longest matching rule wins; allow wins ties.
-    const groups = []; let g = null, lastUA = false;
-    for (const raw of (await res.text()).split('\n')) {
-      const line = raw.replace(/#.*/, '').trim(); if (!line.includes(':')) continue;
-      const key = line.slice(0, line.indexOf(':')).trim().toLowerCase(), val = line.slice(line.indexOf(':') + 1).trim();
-      if (key === 'user-agent') { if (!lastUA) groups.push(g = { ua: [], rules: [] }); g.ua.push(val.toLowerCase()); lastUA = true; continue; }
-      lastUA = false;
-      if (g && (key === 'allow' || key === 'disallow') && val) g.rules.push([key === 'allow', val]);
-    }
-    const mine = groups.filter(x => x.ua.some(a => a.includes('design-recon')));
-    const rules = (mine.length ? mine : groups.filter(x => x.ua.includes('*'))).flatMap(x => x.rules);
-    const target = u.pathname + u.search;
-    let best = [-1, true];
-    for (const [ok, pat] of rules) {
-      const re = new RegExp('^' + pat.replace(/[.+?^{}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\\\$$/, '$'));
-      if (re.test(target) && (pat.length > best[0] || (pat.length === best[0] && ok))) best = [pat.length, ok];
-    }
-    return best[1];
-  } catch { return true; }
-}
 
 const slug = (s) => s.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 40).toLowerCase();
 const f = (arr, fmt = ([k, v]) => `${k} (${v})`) => (arr || []).map(fmt).join(', ') || '—';
 
-async function gotoSafe(page, url) {
-  const res = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
-  await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
-  await page.waitForTimeout(700);
-  // Dismiss obvious cookie banners so they don't pollute the frames (never accept tracking by default).
-  for (const name of [/reject all/i, /decline/i, /only necessary|necessary only|essential only/i, /^close$/i, /accept all|^accept$|got it|i agree/i]) {
-    const b = page.getByRole('button', { name }).first();
-    if (await b.isVisible({ timeout: 300 }).catch(() => false)) { await b.click({ timeout: 1500 }).catch(() => {}); await page.waitForTimeout(300); break; }
-  }
-  return res;
-}
 
 function digest(host, url, d, extras) {
   const t = d.type.roles, L = [];
@@ -283,7 +272,7 @@ function digest(host, url, d, extras) {
     `Accent (links/buttons): ${f(d.color.accent)}`, `Borders: ${f(d.color.border)}`);
   const vk = Object.entries(d.cssVars);
   if (vk.length) L.push(`CSS vars (${d.varsTotal} total, sample): ${vk.slice(0, 24).map(([k, v]) => `${k}:${v}`).join('; ')}`);
-  L.push('', '## Type', `Families by text share: ${f(d.type.families, ([k, v]) => `${k} ${v}%`)}`,
+  L.push('', '## Type', `Families by text share: ${f(d.type.families, ([k, v]) => `${k} ${v}%${fontTier(k.replace(/ \d+$/, '')) ? ' [' + fontTier(k.replace(/ \d+$/, '')) + ']' : ''}`)}`,
     `Scale px: ${d.type.scale.join(' ')}${d.type.ratio ? ` (avg step ×${d.type.ratio})` : ''}`,
     [role('h1'), role('h2'), role('h3'), role('body'), role('button'), role('small')].filter(Boolean).join(' | '),
     `Font sources: ${[...new Set(d.type.requests.map(u => { try { const x = new URL(u); return /googleapis|gstatic/.test(x.host) ? 'Google Fonts' : /typekit/.test(x.host) ? 'Adobe Fonts' : /fontshare/.test(x.host) ? 'Fontshare' : x.host === new URL(url).host ? 'self-hosted' : x.host; } catch { return u; } }))].join(', ') || 'none detected'}`,
@@ -295,6 +284,7 @@ function digest(host, url, d, extras) {
     d.layout.header ? `Header: ${d.layout.header.h}px ${d.layout.header.position} bg ${d.layout.header.bg || 'transparent'}${d.layout.header.blur ? ' ' + d.layout.header.blur : ''}` : 'Header: none',
     d.layout.h1 ? `H1: ${d.layout.h1.size}px ${d.layout.h1.align}, top ${d.layout.h1.top}px, width ${d.layout.h1.width}px · above-fold media: ${d.layout.heroMedia.join(', ') || 'none'}` : 'H1: none',
     `Page height: ${d.layout.docH}px`);
+  if (d.hero) { const h = d.hero; L.push('', '## Hero', `H1 ${h.h1Words} words / ${h.h1Lines} lines, ${h.align} · sub ${h.subChars} chars · eyebrow ${h.eyebrow ? '"' + h.eyebrow + '"' : 'none'} · CTAs ${h.ctas} (${h.ctaLabels.map(x => '"' + x + '"').join(', ')}) · logo strip ${h.logos ? 'yes' : 'no'} · media ${h.media} · bg ${h.bg} · section ${h.height}px`); }
   L.push('', '## Components', ...d.components.buttons.map(([k, v], i) => `Button ${i + 1} (×${v}): ${k}`),
     ...(d.components.cards.length ? d.components.cards.map(([k, v]) => `Repeated card (×${v}): ${k}`) : ['Repeated cards: none']),
     `Counts: ${Object.entries(d.components.counts).map(([k, v]) => `${k} ${v}`).join(', ')}`);

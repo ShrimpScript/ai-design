@@ -10,10 +10,11 @@ import http from 'node:http';
 import path from 'node:path';
 import { launch, newPage, shotCapped } from './lib/pw.mjs';
 import { contactSheet } from './lib/sheet.mjs';
+import { fontTier } from './lib/fonts.mjs';
 
 const argv = process.argv.slice(2);
 const opt = (n, d) => { const i = argv.indexOf(n); return i < 0 ? d : argv[i + 1]; };
-const target = argv.find((a, i) => !a.startsWith('--') && !/^--(out|widths|label|click)$/.test(argv[i - 1] || ''));
+const target = argv.find((a, i) => !a.startsWith('--') && !/^--(out|widths|label|click|frames)$/.test(argv[i - 1] || ''));
 if (!target) { console.error('usage: shoot.mjs <url|file> [--widths 390,768,1440] [--label name] [--dark] [--click text]'); process.exit(1); }
 // Local files are served over http (file:// breaks fonts, CORS, modules), like production.
 let url = target, server;
@@ -34,6 +35,8 @@ const widths = String(opt('--widths', '390,768,1440')).split(',').map(Number);
 const label = opt('--label', new Date().toISOString().slice(11, 19).replace(/:/g, ''));
 const dir = path.join(opt('--out', '.design/shots'), label);
 const CLICK = opt('--click', null);
+// --frames 0.2,0.4,0.6 → extra viewport shots at those fractions of page height (widest width), for scroll-linked effects.
+const FRAMES = opt('--frames', null) ? String(opt('--frames')).split(',').map(Number) : [];
 mkdirSync(dir, { recursive: true });
 
 function audit() {
@@ -110,7 +113,8 @@ for (const w of widths) {
     a.issues.alt ? `- ${a.issues.alt} <img> without alt` : null);
   if (!first) {
     first = a;
-    // Keyboard focus visibility on the first few focusable elements.
+    // Keyboard focus visibility on the first few focusable elements (switch to keyboard modality first).
+    await page.keyboard.press('Shift').catch(() => {});
     const focus = await page.evaluate(async () => {
       const els = [...document.querySelectorAll('a[href],button,input,select,textarea,[tabindex="0"]')].filter(e => e.getBoundingClientRect().width).slice(0, 6);
       const bad = [];
@@ -127,15 +131,25 @@ for (const w of widths) {
     const rm = await page.evaluate(() => document.getAnimations().filter(a => { const t = a.effect?.getTiming?.(); return t && (t.iterations === Infinity || t.duration > 400); }).length);
     first.focus = focus; first.rm = rm;
   }
+  if (FRAMES.length && w === Math.max(...widths)) {
+    await page.emulateMedia({ reducedMotion: 'no-preference' }); await page.reload({ waitUntil: 'networkidle' }).catch(() => {}); await page.waitForTimeout(400);
+    const H = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+    for (const f of FRAMES) {
+      await page.evaluate(y => scrollTo(0, y), Math.round(H * f)); await page.waitForTimeout(700);
+      const fp = path.join(dir, `frame-${Math.round(f * 100)}.jpg`);
+      await page.screenshot({ path: fp, type: 'jpeg', quality: 70 });
+      sheet.push({ path: fp, label: `${w}px scrolled ${Math.round(f * 100)}%` });
+    }
+  }
   await page.context().close();
 }
-await contactSheet(browser, sheet, path.join(dir, 'sheet.jpg'), { cols: sheet.length, width: 2000, title: `${target} — ${label}`, maxImgH: 2600 });
+await contactSheet(browser, sheet, path.join(dir, 'sheet.jpg'), { cols: Math.min(sheet.length, 4), width: 2000, title: `${target} — ${label}`, maxImgH: 2600 });
 await browser.close();
 server?.close();
 
 const rad = first.radii.slice(0, 6).map(([k, v]) => `${k}×${v}`).join(' ');
 const report = [`# shoot ${label} — ${target}`, `Sheet: ${path.join(dir, 'sheet.jpg')}`, '',
-  `Fonts in use: ${first.families.join(', ')}${first.missingFonts.length ? ` · NOT LOADED (fallback showing): ${first.missingFonts.join(', ')}` : ''}`,
+  `Fonts in use: ${first.families.map(f => fontTier(f) ? `${f} [${fontTier(f).toUpperCase()}]` : f).join(', ')}${first.missingFonts.length ? ` · NOT LOADED (fallback showing): ${first.missingFonts.join(', ')}` : ''}`,
   `Type sizes (${first.scale.length}): ${first.scale.join(' ')}${first.scale.length > 9 ? ' — too many steps, tighten the scale' : ''}`,
   `Radii: ${rad || 'none'}${first.radii.length > 5 ? ' — too many radii' : ''}`,
   first.focus.length ? `- No visible focus style: ${first.focus.join(', ')}` : '- Focus styles: visible on sampled controls',

@@ -41,6 +41,9 @@ The brief's explicit words override this list. Everything here is a *default*, n
 | Title Case Everything | Sentence case |
 | Errors that apologise ("Oops! Something went wrong") | What happened and what to do: "Couldn't publish. 2 shifts overlap on Friday. Fix them or publish anyway." |
 
+## AI-product tells
+Glowing orb or neural-net art, sparkle icons, a typewriter cycling "for X / for Y", a "How can I help you today?" chat bubble, "AI-powered" as the headline, sci-fi fonts (`fonts.md` § novelty), purple-to-cyan glow, and a fake chat transcript that shows nothing specific. Instead: **show a real task being done end to end** (input → reasoning/evidence → output → the human's control over it), the guardrails, and the actual time or cost saved on an example.
+
 ## App-specific tells
 Four equal KPI cards on top; donut charts for 3 values; the same icon-in-a-tile before each nav item; a table with every column the same weight; modal for everything (use inline edit or a drawer); a toast for every success (when the UI change itself is the confirmation, skip the toast).
 

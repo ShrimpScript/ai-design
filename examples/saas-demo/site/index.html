@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Firstlight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,300..500&family=Mona+Sans:wdth,wght@75..125,200..900&display=swap">
+<style>
+/* Layout: one long page that starts at 03:12 at night and scrolls into morning; pricing and changelog are day routes. */
+:root {
+  color-scheme: dark;
+  --night: #0E1628; --night-2: #16213A; --night-3: #1D2A47; --night-line: #2A3858;
+  --star: #E6ECF5; --star-2: #9AA8C2; --alert: #FF7A6B;
+  --amber: #FFB36B; --amber-ink: #9A4A0B;
+  --sky: #EEF2F7; --paper: #FFFFFF; --ink: #0E1628; --ink-2: #4A5873; --line: #D5DDE8; --ok: #17684A; --ok-night: #6FD3A4;
+  --dawn: #F6C9A8;
+
+  --sans: "Mona Sans", ui-sans-serif, system-ui, sans-serif;
+  --mono: "Martian Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --wide: "wdth" 112; --cond: "wdth" 85;
+
+  --r-tag: 4px; --r-ctl: 8px; --r-panel: 14px;
+  --ease-out: cubic-bezier(.2, 0, 0, 1);
+  --t-1: 160ms; --t-2: 240ms; --t-3: 420ms;
+  --max: 1200px; --gutter: max(16px, 4vw);
+}
+@property --p { syntax: "<number>"; inherits: true; initial-value: 0; }
+
+* { box-sizing: border-box; }
+html { scroll-padding-top: 80px; }
+body { margin: 0; background: var(--night); color: var(--star); font: 400 17px/1.55 var(--sans); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+body.day { background: var(--sky); color: var(--ink); }
+[hidden] { display: none !important; }
+a { color: inherit; }
+h1, h2, h3, p { margin: 0; }
+h1, h2 { text-wrap: balance; font-variation-settings: var(--wide); letter-spacing: -0.03em; font-weight: 640; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 4px; }
+.day :focus-visible { outline-color: var(--amber-ink); }
+.wrap { max-width: var(--max); margin: 0 auto; padding-inline: var(--gutter); }
+.mono { font-family: var(--mono); font-variation-settings: "wdth" 88; font-size: .78em; letter-spacing: 0; }
+.skip { position: absolute; left: -999px; top: 8px; background: var(--amber); color: var(--night); padding: 8px 12px; border-radius: var(--r-ctl); z-index: 99; }
+.skip:focus { left: 16px; }
+
+/* ---------- nav */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--night) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--night-line); transition: background var(--t-2) var(--ease-out), border-color var(--t-2) var(--ease-out); }
+body.day .nav { background: color-mix(in srgb, var(--sky) 90%, transparent); border-bottom-color: var(--line); }
+.nav .wrap { display: flex; align-items: center; gap: 28px; height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-variation-settings: var(--wide); letter-spacing: -0.02em; font-size: 18px; }
+.brand svg { flex: none; }
+.links { display: flex; gap: 4px; margin-right: auto; position: relative; }
+.links a { text-decoration: none; font-size: 15px; padding: 8px 12px; border-radius: var(--r-ctl); color: var(--star-2); position: relative; }
+body.day .links a { color: var(--ink-2); }
+.links a:hover { color: var(--star); }
+body.day .links a:hover, body.day .links a[aria-current="page"] { color: var(--ink); }
+.links a[aria-current="page"] { color: var(--star); }
+.links a[aria-current="page"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 2px; height: 2px; background: var(--amber); border-radius: 2px; view-transition-name: nav-indicator; }
+body.day .links a[aria-current="page"]::after { background: var(--amber-ink); }
+.nav-cta { display: flex; gap: 8px; align-items: center; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--r-ctl); border: 1px solid var(--night-line); background: transparent; text-decoration: none; font-weight: 560; font-size: 15px; transition: background var(--t-1) var(--ease-out), border-color var(--t-1) var(--ease-out), transform var(--t-1) var(--ease-out); white-space: nowrap; }
+.btn:hover { border-color: var(--star-2); }
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--amber); border-color: var(--amber); color: var(--night); }
+.btn-primary:hover { background: #FFC287; border-color: #FFC287; }
+.btn-sm { height: 36px; padding: 0 14px; font-size: 14px; }
+body.day .btn { border-color: var(--line); }
+body.day .btn:hover { border-color: var(--ink-2); }
+body.day .btn-primary, .day-panel .btn-primary { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+body.day .btn-primary:hover { background: #1F2B45; }
+.menu-btn { display: none; }
+
+/* ---------- hero */
+.hero { padding: 72px 0 56px; position: relative; overflow: hidden; background: var(--night); color: var(--star); }
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 580px); gap: 40px 56px; align-items: start; }
+.hero h1 { grid-column: 1 / -1; max-width: 15em; }
+.hero h1 { font-size: clamp(38px, 5.2vw, 68px); line-height: 1.02; view-transition-name: page-title; }
+.lede { margin-top: 0; font-size: 19px; color: var(--star-2); max-width: 34em; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.sources { margin-top: 40px; font-size: 14px; color: var(--star-2); max-width: 38em; }
+.sources b { color: var(--star); font-weight: 560; }
+.stars { position: absolute; inset: 0; pointer-events: none; opacity: .55;
+  background-image: radial-gradient(1px 1px at 12% 20%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 32% 70%, #cfd8ea 50%, transparent 51%), radial-gradient(1.5px 1.5px at 58% 12%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 76% 44%, #cfd8ea 50%, transparent 51%), radial-gradient(1px 1px at 90% 82%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 46% 90%, #cfd8ea 50%, transparent 51%), radial-gradient(1.5px 1.5px at 6% 88%, #fff 50%, transparent 51%); }
+
+/* product panel: the investigation */
+.inv { background: var(--night-2); border: 1px solid var(--night-line); border-radius: var(--r-panel); overflow: hidden; box-shadow: 0 30px 80px -30px rgb(0 0 0 / .6); position: relative; }
+.inv-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--night-line); }
+.inv-id { font-size: 14px; color: var(--star-2); }
+.inv-title { font-weight: 600; font-size: 15px; }
+.sev { font-size: 12px; font-weight: 700; font-variation-settings: var(--cond); color: var(--alert); border: 1px solid color-mix(in srgb, var(--alert) 50%, transparent); padding: 2px 8px; border-radius: var(--r-tag); letter-spacing: .02em; }
+.steps { list-style: none; margin: 0; padding: 8px 0; }
+.step { display: grid; grid-template-columns: 64px 18px 1fr; gap: 10px; padding: 8px 18px; align-items: start; font-size: 14px; }
+.step time { color: var(--star-2); font-family: var(--mono); font-size: 12px; font-variation-settings: "wdth" 88; padding-top: 3px; }
+.tick { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--night-line); margin-top: 2px; position: relative; transition: background var(--t-2) var(--ease-out), border-color var(--t-2) var(--ease-out); }
+.step.done .tick { border-color: var(--ok-night); background: var(--ok-night); }
+.step.done .tick::after { content: ""; position: absolute; left: 4.5px; top: 1.5px; width: 4px; height: 8px; border: solid var(--night); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.step.running .tick { border-color: var(--amber); border-top-color: transparent; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.step p { color: var(--star); }
+.step .ev { display: block; margin-top: 4px; color: var(--star-2); font-family: var(--mono); font-size: 12px; font-variation-settings: "wdth" 88; }
+.step.pending { opacity: .45; }
+.verdict { margin: 6px 18px 18px; padding: 16px; border-radius: var(--r-ctl); background: var(--night-3); border: 1px solid var(--night-line); transition: opacity var(--t-2) var(--ease-out); }
+.verdict .k { font-size: 12px; font-weight: 700; font-variation-settings: var(--cond); color: var(--amber); letter-spacing: .04em; text-transform: uppercase; }
+.verdict p { margin-top: 6px; font-size: 15px; }
+.verdict .conf { color: var(--ok-night); font-weight: 600; }
+.verdict-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.inv-foot { display: flex; justify-content: space-between; padding: 10px 18px; border-top: 1px solid var(--night-line); font-size: 14px; color: var(--star-2); }
+.replay { background: none; border: 0; color: var(--amber); font-weight: 600; font-size: 14px; padding: 4px 0; }
+.inv.is-pending .verdict { opacity: .35; }
+
+/* ---------- the night shift (scroll-linked signature) */
+.story { position: relative; height: 520vh; --p: 0;
+  background: linear-gradient(to bottom, var(--night) 0%, var(--night) 8%, color-mix(in oklab, var(--night) 70%, #3B4C7A) 42%, #6E7FA8 62%, var(--dawn) 80%, var(--sky) 100%); }
+@supports (animation-timeline: view()) {
+  .story { animation: dawn linear both; animation-timeline: view(); animation-range: contain 0% contain 100%; }
+}
+@keyframes dawn { from { --p: 0; } to { --p: 1; } }
+.stage { position: sticky; top: 64px; height: calc(100vh - 64px); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center; max-width: var(--max); margin: 0 auto; padding-inline: var(--gutter); }
+.sky { position: relative; aspect-ratio: 1 / 1; max-height: 70vh; width: 100%; max-width: 520px; justify-self: center; border-radius: 50%; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% calc(115% - var(--p) * 40%), color-mix(in oklab, var(--dawn) calc(var(--p) * 100%), transparent) 0%, transparent 55%),
+              linear-gradient(to bottom, color-mix(in oklab, var(--night) calc((1 - var(--p)) * 100%), #9FC3E6), color-mix(in oklab, var(--night-3) calc((1 - var(--p)) * 100%), var(--dawn)));
+  border: 1px solid color-mix(in srgb, var(--star) 14%, transparent); }
+.sky .sun { position: absolute; left: 50%; width: 34%; aspect-ratio: 1; margin-left: -17%; border-radius: 50%; background: radial-gradient(circle, #FFE3B8 0%, var(--amber) 60%, #F08A4B 100%); top: calc(100% - var(--p) * 42%); box-shadow: 0 0 80px 20px color-mix(in srgb, var(--amber) 40%, transparent); }
+.sky .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 30%; background: color-mix(in oklab, #0A0F1C calc((1 - var(--p)) * 100%), #3E4C66); }
+.sky .ground::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: color-mix(in srgb, var(--amber) calc(var(--p) * 100%), transparent); }
+.sky .starfield { position: absolute; inset: 0 0 30% 0; opacity: calc(1 - var(--p) * 1.6); background-image: radial-gradient(1.5px 1.5px at 20% 30%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 70% 20%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 42% 55%, #dfe7f5 50%, transparent 51%), radial-gradient(1.5px 1.5px at 84% 60%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 12% 68%, #dfe7f5 50%, transparent 51%), radial-gradient(1px 1px at 60% 40%, #fff 50%, transparent 51%); }
+.clock { position: absolute; left: 0; right: 0; top: 18%; text-align: center; }
+.clock b { display: block; font-family: var(--mono); font-variation-settings: "wdth" 100; font-weight: 400; font-size: clamp(40px, 6vw, 72px); letter-spacing: -0.04em; color: #fff; text-shadow: 0 2px 24px rgb(0 0 0 / .35); }
+.clock span { font-size: 14px; color: #fff; opacity: .85; }
+.log { display: grid; gap: 12px; }
+.log h2 { font-size: clamp(30px, 3.4vw, 44px); line-height: 1.05; margin-bottom: 8px; }
+.log .card { padding: 16px 18px; border-radius: var(--r-panel); background: color-mix(in srgb, var(--night-2) 92%, transparent); border: 1px solid var(--night-line); color: var(--star); opacity: .38; transform: translateY(6px); transition: opacity var(--t-3) var(--ease-out), transform var(--t-3) var(--ease-out), background var(--t-3) var(--ease-out), color var(--t-3) var(--ease-out), border-color var(--t-3) var(--ease-out); }
+.log .card.on { opacity: 1; transform: none; }
+.log .card.now { border-color: var(--amber); }
+.log .card time { font-family: var(--mono); font-variation-settings: "wdth" 88; font-size: 12px; color: var(--amber); }
+.log .card p { font-size: 15px; margin-top: 4px; }
+.story.day-cards .card { background: var(--paper); color: var(--ink); border-color: var(--line); }
+.story.day-cards .card time { color: var(--amber-ink); }
+.story.day-cards .card.now { border-color: var(--amber-ink); }
+.story.day-cards .log h2 { color: var(--ink); }
+.log h2 { transition: color var(--t-3) var(--ease-out); }
+
+/* ---------- day sections */
+.day-zone { background: var(--sky); color: var(--ink); }
+.section { padding: 120px 0; }
+.section + .section { padding-top: 24px; }
+.eyecap { font-size: 14px; color: var(--amber-ink); font-weight: 600; }
+.section h2 { font-size: clamp(30px, 3.6vw, 46px); line-height: 1.05; margin-top: 8px; max-width: 18em; }
+.section .intro { margin-top: 14px; color: var(--ink-2); max-width: 40em; }
+
+/* diagram */
+.flow { margin-top: 48px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; position: relative; }
+.node { position: relative; padding: 0 18px 0 0; }
+.node + .node { padding-left: 18px; border-left: 1px solid var(--line); }
+.node h3 { font-size: 15px; font-weight: 650; display: flex; gap: 8px; align-items: baseline; }
+.node h3 small { font-family: var(--mono); font-variation-settings: "wdth" 88; font-size: 11px; color: var(--ink-2); font-weight: 400; }
+.node ul { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; }
+.node li { font-size: 14px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-ctl); padding: 7px 10px; }
+.node li.mono { font-size: 11px; line-height: 1.45; }
+.bar { display: block; height: 4px; border-radius: 2px; background: var(--line); margin-top: 6px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--ink); }
+.node li.out { border-color: var(--ink); }
+.gate { border: 1px dashed var(--amber-ink); border-radius: var(--r-ctl); padding: 10px; background: #FFF6EC; }
+.gate p { font-size: 14px; color: var(--ink-2); }
+.gate b { color: var(--ink); }
+.arrow { position: absolute; top: 2px; right: -7px; width: 14px; height: 14px; background: var(--sky); color: var(--ink-2); font-size: 12px; line-height: 14px; text-align: center; z-index: 1; }
+
+/* guardrails */
+.rails { margin-top: 40px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 2px solid var(--ink); }
+.rail { padding: 18px 20px 20px 0; }
+.rail + .rail { padding-left: 20px; border-left: 1px solid var(--line); }
+.rail h3 { font-size: 16px; font-weight: 650; }
+.rail p { font-size: 14px; color: var(--ink-2); margin-top: 4px; }
+.rail ul { margin: 12px 0 0; padding-left: 18px; font-size: 14px; display: grid; gap: 4px; }
+.rail.never h3 { color: #A1301F; }
+
+/* sample table */
+.table-wrap { margin-top: 36px; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--paper); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 760px; }
+th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; font-weight: 600; color: var(--ink-2); background: #F7F9FC; }
+tr:last-child td { border-bottom: 0; }
+td .mono { color: var(--ink-2); }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-tag); background: #E7F4EE; color: var(--ok); }
+.pill.human { background: #FFF1E3; color: var(--amber-ink); }
+.pill.noise { background: #EDF0F5; color: var(--ink-2); }
+.note { margin-top: 12px; font-size: 14px; color: var(--ink-2); }
+
+/* final CTA */
+.final { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 56px; align-items: start; padding: 48px; border-radius: var(--r-panel); background: var(--ink); color: var(--star); }
+.final h2 { color: var(--star); margin-top: 0; }
+.final .intro { color: var(--star-2); }
+.replay-form { display: grid; gap: 12px; }
+.replay-form label { display: grid; gap: 6px; font-size: 14px; color: var(--star-2); }
+.replay-form input, .replay-form select { height: 46px; border-radius: var(--r-ctl); border: 1px solid var(--night-line); background: var(--night-2); padding: 0 12px; color: var(--star); font-size: 15px; }
+.replay-form .btn { margin-top: 6px; }
+.form-done { font-size: 15px; color: var(--ok-night); }
+.fine { font-size: 14px; color: var(--star-2); }
+
+/* ---------- pricing route */
+.page { padding: 72px 0 120px; }
+.page-head h1 { font-size: clamp(40px, 5vw, 60px); line-height: 1.03; view-transition-name: page-title; }
+.page-head p { margin-top: 16px; font-size: 19px; color: var(--ink-2); max-width: 36em; }
+.billing { display: inline-flex; position: relative; margin-top: 32px; padding: 4px; border-radius: var(--r-ctl); background: #E1E7F0; }
+.billing button { position: relative; z-index: 1; border: 0; background: none; height: 38px; padding: 0 16px; border-radius: var(--r-tag); font-weight: 560; font-size: 14px; color: var(--ink-2); transition: color var(--t-1) var(--ease-out); }
+.billing button[aria-checked="true"] { color: var(--ink); }
+.billing .ind { position: absolute; top: 4px; bottom: 4px; left: 4px; border-radius: var(--r-tag); background: var(--paper); box-shadow: 0 1px 2px rgb(14 22 40 / .12); transition: transform var(--t-2) var(--ease-out), width var(--t-2) var(--ease-out); }
+.billing em { font-style: normal; color: var(--ok); font-weight: 600; }
+.plans { margin-top: 36px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.plan { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-panel); padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+.plan.main { border: 2px solid var(--ink); }
+.plan h2 { font-size: 22px; letter-spacing: -0.02em; }
+.plan .for { font-size: 14px; color: var(--ink-2); }
+.price { display: flex; align-items: baseline; gap: 6px; min-height: 52px; }
+.price b { font-size: 44px; font-weight: 650; font-variation-settings: var(--wide); letter-spacing: -0.03em; display: inline-block; }
+.price b.flip { animation: flip var(--t-2) var(--ease-out); }
+@keyframes flip { from { opacity: 0; transform: translateY(8px); } }
+.price span { color: var(--ink-2); font-size: 14px; }
+.plan ul { margin: 4px 0 0; padding-left: 18px; font-size: 14px; display: grid; gap: 6px; }
+.plan .btn { margin-top: auto; }
+.plan .btn-primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.over { margin-top: 18px; font-size: 14px; color: var(--ink-2); }
+.faq { margin-top: 72px; max-width: 760px; }
+.faq h2 { font-size: 30px; }
+.qa { border-bottom: 1px solid var(--line); }
+.qa button { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 16px; background: none; border: 0; padding: 20px 0; font-size: 17px; font-weight: 560; text-align: left; }
+.qa button::after { content: "+"; font-size: 22px; font-weight: 300; transition: transform var(--t-2) var(--ease-out); }
+.qa button[aria-expanded="true"]::after { transform: rotate(45deg); }
+.qa .a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--t-2) var(--ease-out); }
+.qa .a > div { overflow: hidden; }
+.qa .a p { padding: 0 0 20px; color: var(--ink-2); max-width: 60ch; }
+.qa button[aria-expanded="true"] + .a { grid-template-rows: 1fr; }
+
+/* ---------- changelog route */
+.entries { margin-top: 48px; display: grid; gap: 0; max-width: 820px; }
+.entry { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 24px; padding: 28px 0; border-top: 1px solid var(--line); }
+.entry time { font-size: 14px; color: var(--ink-2); padding-top: 4px; }
+.entry h2 { font-size: 22px; letter-spacing: -0.02em; }
+.entry p { margin-top: 8px; color: var(--ink-2); }
+.entry code { font-family: var(--mono); font-variation-settings: "wdth" 88; font-size: .8em; background: #E4EAF2; padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+
+/* ---------- report dialog */
+dialog.report { width: min(720px, calc(100% - 32px)); max-height: calc(100% - 48px); padding: 0; border: 1px solid var(--night-line); border-radius: var(--r-panel); background: var(--night-2); color: var(--star); }
+dialog.report[open] { animation: rise var(--t-2) var(--ease-out); }
+dialog.report::backdrop { background: rgb(6 10 20 / .6); }
+@keyframes rise { from { opacity: 0; transform: translateY(10px) scale(.99); } }
+.report header { display: flex; justify-content: space-between; align-items: start; gap: 16px; padding: 20px 24px; border-bottom: 1px solid var(--night-line); position: sticky; top: 0; background: var(--night-2); }
+.report h2 { font-size: 22px; letter-spacing: -0.02em; }
+.report .body { padding: 8px 24px 24px; display: grid; gap: 20px; }
+.report h3 { font-size: 14px; color: var(--amber); font-weight: 650; margin-top: 12px; }
+.report ol, .report ul { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 8px; font-size: 15px; }
+.report pre { margin: 8px 0 0; padding: 12px 14px; background: var(--night); border: 1px solid var(--night-line); border-radius: var(--r-ctl); overflow-x: auto; font: 12px/1.6 var(--mono); font-variation-settings: "wdth" 88; color: var(--star-2); }
+.ruled { color: var(--star-2); }
+.ruled s { color: var(--star-2); }
+
+/* ---------- footer */
+footer { padding: 48px 0 64px; font-size: 14px; color: var(--ink-2); background: var(--sky); border-top: 1px solid var(--line); }
+footer .foot-links { display: flex; gap: 8px; }
+footer .foot-links a { padding: 10px 8px; }
+footer .wrap { align-items: center; display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+
+/* ---------- responsive */
+@media (max-width: 960px) {
+  .hero .wrap { grid-template-columns: 1fr; gap: 40px; }
+  .flow { grid-template-columns: 1fr 1fr; row-gap: 28px; }
+  .node + .node { border-left: 0; padding-left: 0; }
+  .node:nth-child(even) { padding-left: 18px; border-left: 1px solid var(--line); }
+  .arrow { display: none; }
+  .rails { grid-template-columns: 1fr 1fr; }
+  .rail:nth-child(3) { padding-left: 0; border-left: 0; }
+  .plans { grid-template-columns: 1fr; }
+  .final { grid-template-columns: 1fr; padding: 32px 24px; }
+}
+@media (max-width: 900px) {
+  .links, .nav-cta .signin { display: none; }
+  .nav .wrap { gap: 12px; justify-content: space-between; }
+  .menu-btn { display: inline-flex; }
+  .links.open { display: flex; position: absolute; top: 64px; left: 0; right: 0; flex-direction: column; background: var(--night); padding: 8px 16px 16px; border-bottom: 1px solid var(--night-line); }
+  body.day .links.open { background: var(--sky); border-bottom-color: var(--line); }
+}
+@media (max-width: 720px) {
+  body { font-size: 16px; }
+  .hero { padding-top: 40px; }
+  .step { grid-template-columns: 54px 16px 1fr; padding: 8px 14px; font-size: 14px; }
+  .story { height: auto; background: linear-gradient(to bottom, var(--night), #3B4C7A 45%, var(--dawn) 85%, var(--sky)); animation: none !important; }
+  .stage { position: static; height: auto; grid-template-columns: 1fr; padding-block: 64px; }
+  .sky { display: none; }
+  .log .card { opacity: 1; transform: none; }
+  .flow, .rails { grid-template-columns: 1fr; }
+  .node:nth-child(even), .rail + .rail { padding-left: 0; border-left: 0; }
+  .rail { border-top: 1px solid var(--line); }
+  .entry { grid-template-columns: 1fr; gap: 6px; }
+  .section { padding: 72px 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 240ms; animation-timing-function: cubic-bezier(.2, 0, 0, 1); }
+::view-transition-group(page-title), ::view-transition-group(nav-indicator) { animation-duration: 280ms; animation-timing-function: cubic-bezier(.2, 0, 0, 1); }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" data-route="home" aria-label="Firstlight home">
+      <svg width="26" height="18" viewBox="0 0 26 18" aria-hidden="true"><path d="M5 15a8 8 0 0 1 16 0" fill="none" stroke="#FFB36B" stroke-width="2.2" stroke-linecap="round"/><path d="M1 15.5h24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      Firstlight
+    </a>
+    <nav class="links" id="links" aria-label="Main">
+      <a href="#top" data-route="home">Product</a>
+      <a href="#pricing" data-route="pricing">Pricing</a>
+      <a href="#changelog" data-route="changelog">Changelog</a>
+      <a href="#how" data-route="home">How it works</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-sm signin" href="#replay">Sign in</a>
+      <a class="btn btn-sm btn-primary" href="#replay" data-route="home">Replay an incident</a>
+      <button class="btn btn-sm menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="links">Menu</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<!-- ============================ HOME ============================ -->
+<div data-page="home">
+  <section class="hero" id="top">
+    <div class="stars" aria-hidden="true"></div>
+    <div class="wrap">
+      <h1>The 3 a.m. page, investigated before you wake up.</h1>
+      <div>
+        <p class="lede">Firstlight is an AI on-call engineer. It takes the alert, reads your logs, metrics, traces and recent deploys, and hands you a root cause with the evidence attached.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#replay">Replay an incident</a>
+          <button class="btn" type="button" id="open-report">Read this investigation</button>
+        </div>
+        <p class="sources">Reads from <b>PagerDuty, Opsgenie, Datadog, Grafana, Sentry, CloudWatch, GitHub and Kubernetes</b>. Reports in Slack. Read-only until you write a policy that says otherwise.</p>
+      </div>
+
+      <article class="inv" id="inv" aria-label="Example investigation, INC-2291">
+        <div class="inv-head">
+          <div>
+            <div class="inv-id mono">INC-2291 · PagerDuty</div>
+            <div class="inv-title">checkout-api 5xx rate at 8.4%</div>
+          </div>
+          <span class="sev">SEV-2</span>
+        </div>
+        <ol class="steps" id="steps">
+          <li class="step done"><time>03:12:07</time><span class="tick" aria-hidden="true"></span><p>Alert fired. Firstlight acknowledged; on-call not paged yet.</p></li>
+          <li class="step done"><time>03:12:40</time><span class="tick" aria-hidden="true"></span><p>Read 2,341 error logs from checkout-api<span class="ev">"timeout acquiring connection from pool" ×1,902</span></p></li>
+          <li class="step done"><time>03:13:18</time><span class="tick" aria-hidden="true"></span><p>Found deploy #4812 at 03:04, 8 minutes earlier<span class="ev">db.pool.max_size: 50 → 5 in config/prod.yaml</span></p></li>
+          <li class="step done"><time>03:14:02</time><span class="tick" aria-hidden="true"></span><p>Ruled out the database itself<span class="ev">payments-db CPU 31%, connections 12/400, no locks</span></p></li>
+          <li class="step done"><time>03:14:48</time><span class="tick" aria-hidden="true"></span><p>Checked the other 3 services on #4812: healthy</p></li>
+        </ol>
+        <div class="verdict">
+          <div class="k">Root cause <span class="conf">(high confidence)</span></div>
+          <p>Deploy #4812 cut the checkout-api connection pool from 50 to 5. Requests queue for a connection and time out after 2s.</p>
+          <div class="verdict-actions">
+            <button class="btn btn-sm btn-primary" type="button" data-toast="Revert #4815 approved. Rolling back checkout-api.">Approve revert #4815</button>
+            <button class="btn btn-sm" type="button" data-toast="Paged Maya Chen (primary on-call).">Page Maya</button>
+          </div>
+        </div>
+        <div class="inv-foot"><span id="inv-status" role="status">Root cause in 2m 41s</span><button class="replay" type="button" id="replay-btn">Replay</button></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="story" id="story" aria-labelledby="story-title">
+    <div class="stage">
+      <div class="sky" aria-hidden="true">
+        <div class="starfield"></div>
+        <div class="sun"></div>
+        <div class="ground"></div>
+        <div class="clock"><b id="clock">03:12</b><span id="clock-note">Everyone is asleep</span></div>
+      </div>
+      <div class="log">
+        <h2 id="story-title">One night on call, while you sleep</h2>
+        <div class="card" data-at="0"><time>03:12</time><p>checkout-api starts returning errors. The alert goes to Firstlight first, as your policy says.</p></div>
+        <div class="card" data-at="1"><time>03:15</time><p>Root cause found with evidence: the pool-size change in deploy #4812.</p></div>
+        <div class="card" data-at="2"><time>03:16</time><p>Your night policy allows reverting the last deploy when confidence is high. Firstlight opens revert #4815 and rolls it out.</p></div>
+        <div class="card" data-at="3"><time>03:21</time><p>Error rate back to 0.2%. Nobody was woken up. If it hadn't recovered by 03:26, Maya would have been paged.</p></div>
+        <div class="card" data-at="4"><time>07:40</time><p>You open Slack to a four-line summary, the evidence, and a note that the pool change needs a proper fix.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="day-zone">
+    <section class="section" id="how">
+      <div class="wrap">
+        <p class="eyecap">How an investigation works</p>
+        <h2>It works the problem the way your best on-call engineer would, and shows its work.</h2>
+        <p class="intro">Every step is a query you can rerun. Hypotheses it rules out stay in the report, so you can see what it checked and what it didn't.</p>
+        <div class="flow" role="list">
+          <div class="node" role="listitem"><h3>Signals <small>in</small></h3>
+            <ul><li>The alert and its history</li><li>Logs, metrics, traces</li><li>Deploys and config diffs</li><li>Your runbooks</li></ul><span class="arrow" aria-hidden="true">→</span></div>
+          <div class="node" role="listitem"><h3>Hypotheses <small>ranked</small></h3>
+            <ul><li>Bad deploy #4812<span class="bar"><i style="width:82%"></i></span></li><li>payments-db saturation<span class="bar"><i style="width:34%"></i></span></li><li>Upstream card network<span class="bar"><i style="width:12%"></i></span></li></ul><span class="arrow" aria-hidden="true">→</span></div>
+          <div class="node" role="listitem"><h3>Evidence <small>queries</small></h3>
+            <ul><li class="mono">logs: service:checkout-api status:5xx | top msg</li><li class="mono">deploys: since 02:40 | diff config</li><li class="mono">metrics: payments-db.cpu, .connections</li></ul><span class="arrow" aria-hidden="true">→</span></div>
+          <div class="node" role="listitem"><h3>Policy gate</h3>
+            <div class="gate"><p><b>Allowed at night:</b> revert last deploy, if confidence is high and the diff touches config only.</p><p style="margin-top:6px"><b>Otherwise:</b> page the on-call human with the report.</p></div><span class="arrow" aria-hidden="true">→</span></div>
+          <div class="node" role="listitem"><h3>Outcome <small>out</small></h3>
+            <ul><li class="out">Root cause + confidence</li><li>Revert #4815, or a page</li><li>Slack summary + full report</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="guardrails">
+      <div class="wrap">
+        <p class="eyecap">Guardrails</p>
+        <h2>You decide what it can touch. By default, nothing.</h2>
+        <div class="rails">
+          <div class="rail"><h3>Reads</h3><p>Always, with scoped read-only tokens</p><ul><li>Logs, metrics, traces</li><li>Deploy history and diffs</li><li>Runbooks and past incidents</li></ul></div>
+          <div class="rail"><h3>Proposes</h3><p>A person approves in Slack</p><ul><li>Reverts and rollbacks</li><li>Feature-flag changes</li><li>Scaling a deployment</li></ul></div>
+          <div class="rail"><h3>Acts alone</h3><p>Only what your policy file allows</p><ul><li>Revert last deploy at night</li><li>Restart a crash-looping pod, once</li><li>Silence a known-noisy alert for 1h</li></ul></div>
+          <div class="rail never"><h3>Never</h3><p>Not configurable</p><ul><li>Database writes or deletes</li><li>IAM and secrets changes</li><li>Anything outside the policy</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="week">
+      <div class="wrap">
+        <p class="eyecap">A week of investigations</p>
+        <h2>Most alerts end with a revert, a page, or an alert you should tune.</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Incident</th><th scope="col">Fired</th><th scope="col">Root cause in</th><th scope="col">What happened</th><th scope="col">Outcome</th></tr></thead>
+            <tbody>
+              <tr><td>checkout-api 5xx at 8.4%<br><span class="mono">INC-2291</span></td><td>Tue 03:12</td><td>2m 41s</td><td>Pool size cut by deploy #4812; reverted under night policy</td><td><span class="pill">Resolved alone</span></td></tr>
+              <tr><td>search p95 latency 2.1s<br><span class="mono">INC-2294</span></td><td>Tue 14:05</td><td>4m 10s</td><td>Two hypotheses tied; paged with both and the queries</td><td><span class="pill human">Paged a human</span></td></tr>
+              <tr><td>kafka-3 disk at 91%<br><span class="mono">INC-2297</span></td><td>Wed 01:44</td><td>1m 55s</td><td>Retention set to 30d on one topic; proposed 7d</td><td><span class="pill human">Approved 07:52</span></td></tr>
+              <tr><td>TLS cert expiring in 14 days<br><span class="mono">INC-2301</span></td><td>Thu 09:00</td><td>38s</td><td>Auto-renewal already scheduled; suggested raising the threshold</td><td><span class="pill noise">Alert tuned</span></td></tr>
+              <tr><td>worker queue depth over 50k<br><span class="mono">INC-2305</span></td><td>Sat 22:31</td><td>3m 02s</td><td>Crash-looping pod after OOM; restarted once, memory limit PR opened</td><td><span class="pill">Resolved alone</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">Sample workspace data for this demo. Times are from alert to posted root cause.</p>
+      </div>
+    </section>
+
+    <section class="section" id="replay">
+      <div class="wrap">
+        <div class="final">
+          <div>
+            <h2>Replay one of your own incidents.</h2>
+            <p class="intro">Connect a read-only token, pick an incident from last month, and Firstlight investigates it again from the alert. You compare its answer with what your team found.</p>
+            <p class="fine" style="margin-top:16px">Nothing is changed in your systems. Tokens are read-only and deleted after the replay.</p>
+          </div>
+          <form class="replay-form" id="replay-form" novalidate>
+            <label for="rf-email">Work email<input id="rf-email" type="email" autocomplete="email" required placeholder="maya@yourcompany.com"></label>
+            <label for="rf-source">Where do your alerts live?<select id="rf-source"><option>PagerDuty</option><option>Opsgenie</option><option>Grafana OnCall</option><option>Datadog</option><option>Something else</option></select></label>
+            <button class="btn btn-primary" type="submit">Set up a replay</button>
+            <p class="form-done" id="form-done" role="status" hidden></p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ============================ PRICING ============================ -->
+<div data-page="pricing" hidden>
+  <section class="page">
+    <div class="wrap">
+      <div class="page-head">
+        <h1>Priced per investigation, not per seat.</h1>
+        <p>Everyone on the rotation gets Firstlight. You pay for the alerts it works on.</p>
+      </div>
+      <div class="billing" role="radiogroup" aria-label="Billing period">
+        <span class="ind" aria-hidden="true"></span>
+        <button type="button" role="radio" aria-checked="false" data-bill="monthly">Monthly</button>
+        <button type="button" role="radio" aria-checked="true" data-bill="annual">Annual <em>−20%</em></button>
+      </div>
+      <div class="plans">
+        <article class="plan"><h2>Starter</h2><p class="for">One team trying it on real alerts.</p>
+          <div class="price"><b data-m="0" data-a="0">$0</b><span>/ month</span></div>
+          <ul><li>25 investigations / month</li><li>1 alert source</li><li>Read-only, reports in Slack</li></ul>
+          <a class="btn" href="#replay" data-route="home">Start with a replay</a></article>
+        <article class="plan main"><h2>Team</h2><p class="for">A production rotation that wants to sleep.</p>
+          <div class="price"><b data-m="600" data-a="480">$480</b><span id="team-unit">/ month, billed yearly</span></div>
+          <ul><li>400 investigations / month</li><li>All alert and data sources</li><li>Night policies: revert, restart, silence</li><li>Replay any past incident</li></ul>
+          <a class="btn btn-primary" href="#replay" data-route="home">Start a 30-day trial</a></article>
+        <article class="plan"><h2>Enterprise</h2><p class="for">Many services, strict data rules.</p>
+          <div class="price"><b>Custom</b></div>
+          <ul><li>Runs in your VPC</li><li>Bring your own model endpoint</li><li>SSO, SCIM, audit log export</li></ul>
+          <a class="btn" href="#replay" data-route="home">Talk to an engineer</a></article>
+      </div>
+      <p class="over">Past your plan: $1.20 per investigation. Duplicate alerts for the same incident count once.</p>
+
+      <div class="faq">
+        <h2>Questions engineers ask first</h2>
+        <div class="qa"><button type="button" aria-expanded="false" aria-controls="qa1">Do our logs leave our cloud?</button><div class="a" id="qa1"><div><p>On Team, log excerpts go to the model over a zero-retention API and are not used for training. On Enterprise, Firstlight runs in your VPC and calls a model endpoint you choose.</p></div></div></div>
+        <div class="qa"><button type="button" aria-expanded="false" aria-controls="qa2">What if it's wrong?</button><div class="a" id="qa2"><div><p>Below high confidence it doesn't act, it pages. Every report lists the hypotheses it ruled out and the queries it ran, so a wrong answer is quick to spot and rerun.</p></div></div></div>
+        <div class="qa"><button type="button" aria-expanded="false" aria-controls="qa3">What counts as an investigation?</button><div class="a" id="qa3"><div><p>One incident, from alert to report, however many alerts fire for it. Re-running an investigation you asked for is free.</p></div></div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============================ CHANGELOG ============================ -->
+<div data-page="changelog" hidden>
+  <section class="page">
+    <div class="wrap">
+      <div class="page-head">
+        <h1>Changelog</h1>
+        <p>What changed in Firstlight, newest first.</p>
+      </div>
+      <div class="entries">
+        <article class="entry"><time datetime="2026-09-22">22 Sep 2026</time><div><h2>Night policies</h2><p>Write rules like <code>revert: last_deploy if confidence == high and hour in 00..07</code>. Anything outside a rule still pages a human.</p></div></article>
+        <article class="entry"><time datetime="2026-09-08">8 Sep 2026</time><div><h2>Ruled-out hypotheses in every report</h2><p>Reports now list what Firstlight checked and dismissed, with the query and the result for each.</p></div></article>
+        <article class="entry"><time datetime="2026-08-19">19 Aug 2026</time><div><h2>Kubernetes events as evidence</h2><p>OOM kills, evictions and failed probes are pulled into the timeline next to logs and deploys.</p></div></article>
+        <article class="entry"><time datetime="2026-07-30">30 Jul 2026</time><div><h2>Replays</h2><p>Point Firstlight at any past incident and it investigates from the original alert, using only data from before the fix.</p></div></article>
+      </div>
+    </div>
+  </section>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Firstlight is a fictional product, built as a design-recon demo.</span>
+    <nav aria-label="Footer" class="foot-links"><a href="#top">Security</a><a href="#top">Docs</a><a href="#top">Status</a></nav>
+  </div>
+</footer>
+
+<dialog class="report" id="report" aria-labelledby="report-title">
+  <header>
+    <div><p class="mono" style="color:var(--star-2)">INC-2291 full report</p><h2 id="report-title">checkout-api 5xx after deploy #4812</h2></div>
+    <button class="btn btn-sm" type="button" id="close-report">Close</button>
+  </header>
+  <div class="body">
+    <div><h3>Summary</h3><p>At 03:04 deploy #4812 changed <span class="mono">db.pool.max_size</span> from 50 to 5 for checkout-api. From 03:11 requests waited for a connection and timed out after 2s, and the 5xx rate reached 8.4%. Firstlight reverted the change at 03:16 under the night policy; errors returned to 0.2% by 03:21.</p></div>
+    <div><h3>Evidence</h3>
+<pre>03:12:40  logs     service:checkout-api status:5xx  → 2,341 lines
+          top msg  "timeout acquiring connection from pool"  ×1,902
+03:13:18  deploys  since 02:40 → #4812 (checkout-api, cart, tax, email)
+          diff     config/prod.yaml  db.pool.max_size: 50 → 5
+03:14:02  metrics  payments-db cpu 31%  conns 12/400  locks 0
+03:14:48  health   cart ok · tax ok · email ok</pre></div>
+    <div><h3>Ruled out</h3><ul class="ruled"><li>payments-db saturation: CPU and connections normal, no lock waits</li><li>Card network outage: provider status green, no upstream 5xx</li><li>Traffic spike: requests/min within 4% of last Tuesday</li></ul></div>
+    <div><h3>Actions</h3><ol><li>03:16 Revert #4815 opened and deployed (policy: <span class="mono">night-revert</span>)</li><li>03:21 Recovery confirmed; on-call not paged</li><li>Follow-up for the team: the pool change was meant for staging</li></ol></div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* ---------- routes with view transitions */
+  const pages = { home: $('[data-page="home"]'), pricing: $('[data-page="pricing"]'), changelog: $('[data-page="changelog"]') };
+  const routeOf = (hash) => hash === '#pricing' ? 'pricing' : hash === '#changelog' ? 'changelog' : 'home';
+  let current = null;
+  function show(route, anchor) {
+    for (const [k, el] of Object.entries(pages)) el.hidden = k !== route;
+    document.body.classList.toggle('day', route !== 'home');
+    $$('.links a').forEach(a => a.toggleAttribute('aria-current', false));
+    const navFor = $(`.links a[data-route="${route}"]`);
+    if (navFor) navFor.setAttribute('aria-current', 'page');
+    document.title = route === 'home' ? 'Firstlight' : `Firstlight ${route}`;
+    current = route;
+    if (anchor) { const t = document.getElementById(anchor); if (t) t.scrollIntoView(); } else scrollTo(0, 0);
+    tick();
+  }
+  function go(hash) {
+    const route = routeOf(hash), anchor = route === 'home' && hash && !['#top', ''].includes(hash) ? hash.slice(1) : null;
+    if (route === current) { if (anchor) document.getElementById(anchor)?.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth' }); else if (hash === '#top') scrollTo({ top: 0, behavior: reduce.matches ? 'auto' : 'smooth' }); return; }
+    if (document.startViewTransition && !reduce.matches) document.startViewTransition(() => show(route, anchor));
+    else show(route, anchor);
+  }
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a || a.classList.contains('skip')) return;
+    e.preventDefault();
+    const h = a.getAttribute('href');
+    try { history.pushState(null, '', h); } catch {}
+    $('#links').classList.remove('open'); $('#menu-btn').setAttribute('aria-expanded', 'false');
+    go(h);
+  });
+  addEventListener('popstate', () => go(location.hash));
+  $('#menu-btn').addEventListener('click', (e) => { const o = $('#links').classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', String(o)); });
+
+  /* ---------- hero: replay the investigation (content is complete at rest) */
+  const steps = $$('#steps .step'), inv = $('#inv'), status = $('#inv-status');
+  let playing = false;
+  async function replay() {
+    if (playing) return; playing = true;
+    const wait = (ms) => new Promise(r => setTimeout(r, reduce.matches ? 0 : ms));
+    inv.classList.add('is-pending');
+    steps.forEach(s => { s.classList.remove('done', 'running'); s.classList.add('pending'); });
+    for (const [i, s] of steps.entries()) {
+      s.classList.replace('pending', 'running'); status.textContent = `Investigating · step ${i + 1} of ${steps.length}`;
+      await wait(620); s.classList.replace('running', 'done');
+    }
+    inv.classList.remove('is-pending'); status.textContent = 'Root cause in 2m 41s'; playing = false;
+  }
+  $('#replay-btn').addEventListener('click', replay);
+  document.addEventListener('click', (e) => { const b = e.target.closest('[data-toast]'); if (b) { status.textContent = b.dataset.toast; } });
+
+  /* ---------- report dialog */
+  const dlg = $('#report');
+  $('#open-report').addEventListener('click', () => dlg.showModal());
+  $('#close-report').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+
+  /* ---------- the night shift: scroll-linked (CSS timeline where supported, JS otherwise) */
+  const story = $('#story'), clock = $('#clock'), note = $('#clock-note'), cards = $$('.log .card');
+  const cssTimeline = CSS.supports('animation-timeline: view()');
+  const times = [[0, 3 * 60 + 12], [0.22, 3 * 60 + 15], [0.4, 3 * 60 + 16], [0.58, 3 * 60 + 21], [0.9, 7 * 60 + 40]];
+  const notes = ['Everyone is asleep', 'Evidence found', 'Revert rolling out', 'Recovered, nobody paged', 'Good morning'];
+  let raf = 0;
+  function progress() {
+    const r = story.getBoundingClientRect(), total = r.height - innerHeight;
+    return Math.min(1, Math.max(0, -r.top / (total || 1)));
+  }
+  function tick() {
+    raf = 0;
+    if (current === 'home') document.body.classList.toggle('day', story.getBoundingClientRect().bottom < 64);
+    if (current !== 'home' || innerWidth <= 720) return;
+    const p = cssTimeline ? parseFloat(getComputedStyle(story).getPropertyValue('--p')) || progress() : progress();
+    if (!cssTimeline) story.style.setProperty('--p', p.toFixed(4));
+    let k = 0; for (let i = 0; i < times.length; i++) if (p >= times[i][0]) k = i;
+    const [p0, m0] = times[k], [p1, m1] = times[Math.min(k + 1, times.length - 1)];
+    const m = k === times.length - 1 ? m0 : Math.round(m0 + (m1 - m0) * Math.min(1, (p - p0) / (p1 - p0 || 1)));
+    clock.textContent = `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+    note.textContent = notes[k];
+    cards.forEach((c, i) => { c.classList.toggle('on', i <= k); c.classList.toggle('now', i === k); });
+    story.classList.toggle('day-cards', p > 0.72);
+  }
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(tick); }, { passive: true });
+  addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(tick); });
+
+  /* ---------- pricing: billing toggle with a sliding indicator and a number flip */
+  const ind = $('.billing .ind');
+  function placeInd() { const on = $('.billing [aria-checked="true"]'); if (!on || !on.offsetWidth) return; ind.style.width = on.offsetWidth + 'px'; ind.style.transform = `translateX(${on.offsetLeft - 4}px)`; }
+  $$('.billing button').forEach(b => b.addEventListener('click', () => {
+    $$('.billing button').forEach(x => x.setAttribute('aria-checked', String(x === b)));
+    const annual = b.dataset.bill === 'annual';
+    $$('.price b[data-m]').forEach(el => { const v = annual ? el.dataset.a : el.dataset.m; if (el.textContent !== '$' + v) { el.textContent = '$' + v; el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip'); } });
+    $('#team-unit').textContent = annual ? '/ month, billed yearly' : '/ month, billed monthly';
+    placeInd();
+  }));
+  new ResizeObserver(placeInd).observe($('.billing'));
+
+  /* ---------- FAQ */
+  $$('.qa button').forEach(b => b.addEventListener('click', () => b.setAttribute('aria-expanded', String(b.getAttribute('aria-expanded') !== 'true'))));
+
+  /* ---------- replay form (no network in this demo) */
+  $('#replay-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = $('#rf-email'), done = $('#form-done');
+    if (!email.value || !email.checkValidity()) { done.hidden = false; done.style.color = 'var(--alert)'; done.textContent = 'Enter a work email so we can send the replay link.'; email.focus(); return; }
+    done.hidden = false; done.style.color = ''; done.textContent = `Replay link on its way to ${email.value}. It asks for a read-only ${$('#rf-source').value} token.`;
+  });
+
+  go(location.hash);
+  if (!location.hash || location.hash === '#top') { current = 'home'; show('home'); }
+})();
+</script>
+</body>
+</html>
