@@ -89,12 +89,15 @@ It respects `robots.txt` (RFC 9309 matching), dismisses cookie banners with "rej
 | Structured user feedback | — | — | — | ✔ tickable reference board + dial questions |
 | Deterministic slop detector | — | ✔ | — | ✔ `slop-lint` (static) + `shoot` (runtime) |
 | Screenshot critique loop | suggested | ✔ | — | ✔ one contact sheet per round |
+| Craft layer (display type, subject illustration/3D, item graphics) | ✔ principles | — | — | ✔ `craft.md` + measured by `shoot` (flat type, no visual, task below fold) |
 | 3D assembly verification | — | — | — | ✔ geometric checks + x-ray + independent cross-review |
 | Fonts | advice (its recommended list is now itself overused) | advice | pairings list | ✔ 3 enforced tiers, specimen renders, commercial→free map, self-host |
 | Motion from real sites | — | `animate` command | — | ✔ measured reveals, scrub, pinning, transitions, springs |
 | Verification budget (no over-checking) | — | — | — | ✔ ≤ 3 targeted shoot rounds |
 
 It **stacks** with the others: `frontend-design`'s taste principles and `impeccable`'s commands both work on top of a recon-grounded brief. This skill adds the evidence and the verification.
+
+**Head-to-head** (same prompt, blind judges, n = 1 per skill): after adding the craft layer, all 4 judges preferred design-recon's app (8 vs 6 overall, 9 vs 5 distinctiveness), with 0 serious accessibility issues vs 8. It costs more: ~4× the time and ~2× the tokens. See `examples/benchmark/README.md`.
 
 **Token budget:** the model reads digests (~1k tokens per site), one board image, and one contact sheet per build round, never raw HTML or individual frames.
 

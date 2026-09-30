@@ -114,7 +114,14 @@ function craft() {
     if (m >= 28 && !el.closest('button,a,label')) items++;
     if (m >= 64) area += Math.min(r.width, vw) * Math.min(r.height, vh);
   }
-  return { families: Object.keys(fam), ratio: +(max / body).toFixed(1), body, max, maxFam, visual: Math.round(100 * area / (vw * vh)), items };
+  // The task is the per-item action repeated down the list ("Water", "Approve", "Open"); fall back to the first control in main.
+  const vis = (e) => { const r = e.getBoundingClientRect(); return r.width && r.height && !e.closest('header,nav,dialog,[aria-hidden=true]') && getComputedStyle(e).visibility !== 'hidden'; };
+  const btns = [...document.querySelectorAll('button, [role=button]')].filter(vis), by = {};
+  for (const b of btns) { const k = (b.innerText || b.getAttribute('aria-label') || '').trim().toLowerCase().split(/\s+/)[0]; if (k) (by[k] ||= []).push(b); }
+  const rep = Object.values(by).filter(a => a.length >= 3).sort((a, b) => b.length - a.length)[0];
+  const act = rep ? rep[0] : [...document.querySelectorAll('main button, main [role=button], main a[href], main input')].find(vis);
+  const actTop = act ? Math.round(act.getBoundingClientRect().top + scrollY) : null;
+  return { actTop, families: Object.keys(fam), ratio: +(max / body).toFixed(1), body, max, maxFam, visual: Math.round(100 * area / (vw * vh)), items };
 }
 
 const browser = await launch();
@@ -140,7 +147,9 @@ for (const w of widths) {
   if (!first) lines.push(`- Craft (first screen): ${c.families.length} famil${c.families.length === 1 ? 'y' : 'ies'} (${c.families.join(', ')}), largest ${Math.round(c.max)}px ${c.maxFam} = ${c.ratio}× body ${c.body}px, drawn visuals ${c.visual}% of screen, ${c.items} object graphics`,
     c.ratio < 2.4 ? `- FLAT TYPE: largest text is only ${c.ratio}× body. Set one line as image (≥ 3× body, display face) — references/craft.md` : null,
     c.families.length < 2 && c.ratio < 3.5 ? `- ONE VOICE: a single family with no display contrast. Pair a display face or use the family's extreme range — references/craft.md` : null,
-    c.visual < 8 && c.items < 3 ? `- NO SIGNATURE VISUAL: nothing drawn on the first screen (illustration, 3D, generative, item graphics) — references/craft.md` : null);
+    null);
+  lines.push(w < 600 && c.actTop != null && c.actTop > (w < 600 ? 844 : 900) ? `- TASK BELOW FOLD: first action is at ${c.actTop}px on a ${w}px screen. Compact the hero visual on phones — references/craft.md § Guardrails` : null);
+  if (!first) lines.push(c.visual < 8 && c.items < 3 ? `- NO SIGNATURE VISUAL: nothing drawn on the first screen (illustration, 3D, generative, item graphics) — references/craft.md` : null);
   if (!first) {
     first = a;
     // Keyboard focus visibility on the first few focusable elements (switch to keyboard modality first).

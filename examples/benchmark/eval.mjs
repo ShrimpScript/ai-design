@@ -14,7 +14,7 @@ const axe = readFileSync(process.argv[2], 'utf8');
 const shotsDir = path.join(here, 'shots'); mkdirSync(shotsDir, { recursive: true });
 const results = {};
 const browser = await launch();
-for (const run of ['A', 'B']) {
+for (const run of (process.env.RUNS || 'A,B').split(',')) {
   const file = path.join(here, run, 'out', 'index.html');
   const r = results[run] = { bytes: statSync(file).size };
   const srv = await serve(file);

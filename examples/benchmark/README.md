@@ -49,10 +49,39 @@ The functional probe was first unfair to B: it filled a stray first-screen field
 3. **Rotate the "house" font:** a favourite used everywhere becomes the next tell (fonts.md). Specimen at least 3 faces and never reuse the last project's.
 4. **Leaner quick mode:** 2 references, no board, a second shoot round only for real defects.
 
+## Rerun (A2) after adding the craft layer
+The same prompt was sent to a fresh agent with the updated skill (`A2/`, commit `57bbe1f` plus the craft layer). **B was not re-run.** Its output is the same file, so run-to-run variance on B's side isn't captured.
+| | A2: design-recon + craft | B: frontend-design |
+|---|---|---|
+| Wall time | 605.8 s | 139.8 s |
+| Tokens | 123,427 | 59,054 |
+| axe serious / moderate | **0 / 0** | 8 / 1 |
+| Add → persists, console errors, mobile overflow | ✔ ✔, 0, 0 px | ✔ ✔, 0, 0 px |
+
+**Blind judges** (4 fresh judges on the first screen, which both apps now open populated; X/Y counterbalanced 2 and 2):
+| Judge | A2 overall | B overall | A2 distinct. | B distinct. | A2 mobile | B mobile | Ships |
+|---|---|---|---|---|---|---|---|
+| 1 (A2 = X) | **8** | 6 | 9 | 5 | 7 | 6 | A2 |
+| 2 (A2 = Y) | **8** | 6 | 9 | 5 | 7 | 6 | A2 |
+| 3 (A2 = X) | **8** | 6 | 9 | 5 | 7 | 6 | A2 |
+| 4 (A2 = Y) | **8** | 6 | 9 | 5 | 7 | 6 | A2 |
+
+- **What changed the verdict:**
+  - Corben display type paired with Golos Text.
+  - A parametric SVG windowsill of 8 distinct plant silhouettes, drawn in glaze colours taken from a measured pottery site.
+  - Each pot has a moisture stake, and its leaves droop as the soil dries.
+  - The same drawings reappear in the rows and the calendar.
+- **Weaknesses all 4 judges named:**
+  - On phones the sill crops and pushes the list below the fold. `shoot.mjs` now flags this as `TASK BELOW FOLD`.
+  - The moisture bars are unlabelled.
+  - The heavy display face on every heading is loud.
+  All three are now guardrails in `craft.md`.
+- A first attempt at judges 3–4 accidentally reused stale screenshots from the old round. It was discarded and re-run with the correct images.
+
 ## Limitations (read before quoting)
 - **n = 1 run per skill, one prompt.** The outputs vary run to run. This is an indication, not a statistically meaningful result.
 - **Judges are LLMs** from the same model family as the builders, seeing screenshots only (no interaction). Human judges would be better.
 - **The home-team metrics** (`slop-lint`, `palette`, `shoot`) favour A, since A runs them on itself. They're listed only below and weren't used in the verdict: A lint 100 / palette clean / 4 type sizes. B lint 100 / palette: 2 muddy earth tones and a vibrating blue–amber pair / radius sprawl.
-- The A/B used the skill **before** the fixes above. A re-run is the honest next step.
+- The original A/B used the skill **before** the fixes above. The A2 rerun used them, but B was not re-run.
 
 Files: `A/`, `B/` (the full workspaces, including A's `.design/` brief, recon and shots), `eval.mjs`, `eval.json`, `populated.mjs`, `blind.sh`, `shots/`.

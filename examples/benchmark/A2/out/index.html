@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sill, the watering list</title>
+<meta name="description" content="Keep track of when each of your houseplants needs water.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Corben:wght@400;700&family=Golos+Text:wght@400..700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wall:#E8EBE9; --wall-2:#DDE2DF; --page:#F4F5F2; --surface:#FFFFFF;
+  --ink:#1E2320; --muted:#59605B; --rule:#CFD5D0; --rule-strong:#1E2320;
+  --water:#1F6F8B; --water-ink:#17596F; --water-tint:#DDEDF1;
+  --thirsty:#B26B12; --thirsty-ink:#8A5000; --thirsty-tint:#F6EBDB;
+  --fine:#4E7A45; --fine-ink:#3C6135;
+  --r-1:4px; --r-2:8px; --r-3:16px;
+  --dur-1:100ms; --dur-2:160ms; --dur-3:240ms; --dur-4:450ms;
+  --ease-out:cubic-bezier(.2,.8,.2,1); --ease-in:cubic-bezier(.4,0,1,1);
+  --display:"Corben", Georgia, serif;
+  --text:"Golos Text", system-ui, sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page);color:var(--ink);font:400 16px/1.5 var(--text);text-rendering:optimizeLegibility}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--water);outline-offset:2px;border-radius:var(--r-1)}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* header */
+.top{background:var(--wall)}
+.top .wrap{display:flex;align-items:center;gap:16px;min-height:64px}
+.brand{display:flex;align-items:center;gap:8px;font:700 22px/1 var(--display);letter-spacing:-.01em;margin-right:auto}
+.brand svg{width:22px;height:26px}
+.today{color:var(--muted);font-size:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:var(--r-1);border:1px solid transparent;font-weight:600;font-size:14px;line-height:1;white-space:nowrap;transition:background var(--dur-2) var(--ease-out),border-color var(--dur-2) var(--ease-out),color var(--dur-2)}
+.btn-ink{background:var(--ink);color:#fff}
+.btn-ink:hover{background:#353c37}
+.btn-water{background:var(--water);color:#fff}
+.btn-water:hover{background:var(--water-ink)}
+.btn-ghost{background:transparent;border-color:var(--rule);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--ink)}
+.btn-text{background:none;border:0;padding:0 4px;height:32px;color:var(--water-ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.btn-danger{background:#9B2F22;color:#fff}
+.btn svg{width:14px;height:16px;flex:none}
+
+/* hero */
+.hero{background:var(--wall);position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-10% auto 0 -10%;width:70%;background:linear-gradient(115deg,rgba(255,255,255,.55),rgba(255,255,255,0) 70%);clip-path:polygon(10% 0,62% 0,100% 100%,40% 100%);pointer-events:none}
+.hero .wrap{position:relative;padding-top:32px}
+.keyline{font:700 clamp(44px,5.4vw,66px)/1.04 var(--display);letter-spacing:-.018em;margin:0;max-width:14ch;text-wrap:balance}
+.detail{font-size:19px;line-height:1.45;color:var(--ink);max-width:46ch;margin:14px 0 0;text-wrap:pretty}
+.detail b{font-weight:600}
+.examples{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:18px;font-size:14px;color:var(--muted)}
+.sill-scroll{margin-top:20px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.sill-scroll svg{display:block;margin:0 auto}
+.slot{cursor:pointer}
+.slot .art{transform-box:fill-box;transform-origin:50% 100%}
+.slot:hover .lbl-name{text-decoration:underline;text-underline-offset:3px}
+.slot:focus{outline:none}
+.slot:focus-visible .focus-ring{stroke:var(--water);stroke-width:2}
+@media (prefers-reduced-motion:no-preference){
+  .enter .slot .art{animation:rise 600ms var(--ease-out) both;animation-delay:calc(var(--i) * 55ms + 80ms)}
+  .enter .slot .lbl{animation:fade 500ms var(--ease-out) both;animation-delay:calc(var(--i) * 55ms + 260ms)}
+}
+@keyframes rise{from{transform:translateY(22px) scale(.94);opacity:0}}
+@keyframes fade{from{opacity:0}}
+.drop{animation:drop 520ms var(--ease-in) both}
+@keyframes drop{from{transform:translateY(-26px);opacity:0}30%{opacity:1}to{transform:translateY(36px);opacity:0}}
+
+/* main */
+main .wrap{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:56px;padding-top:40px;padding-bottom:80px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px}
+.chip{height:34px;padding:0 14px;border-radius:17px;border:1px solid var(--rule);background:transparent;font-size:14px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip:hover{border-color:var(--ink)}
+.group h2{font:700 22px/1.2 var(--display);margin:32px 0 4px;display:flex;align-items:baseline;gap:10px}
+.group h2 .n{font:500 14px/1 var(--text);color:var(--muted);font-variant-numeric:tabular-nums}
+.rows{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule-strong)}
+.row{border-bottom:1px solid var(--rule)}
+.row-main{display:grid;grid-template-columns:52px minmax(0,1fr) 150px 116px 104px;align-items:center;gap:16px;padding:12px 0}
+.row.flash{animation:flash 1600ms var(--ease-out)}
+@keyframes flash{from{background:var(--water-tint)}}
+.row-art svg{display:block;width:52px;height:64px}
+.row-name{background:none;border:0;padding:0;text-align:left;display:block;width:100%;border-radius:var(--r-1)}
+.row-name .nm{display:block;font:700 19px/1.2 var(--display);letter-spacing:-.005em;overflow-wrap:anywhere}
+.row-name .meta{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+.row-name:hover .nm{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.gauge{display:grid;gap:6px}
+.track{height:8px;border-radius:4px;background:var(--wall-2);overflow:hidden;box-shadow:inset 0 1px 1px rgba(30,35,32,.12)}
+.fill{height:100%;border-radius:4px;background:var(--water);transition:width var(--dur-4) var(--ease-out)}
+.fill.low{background:var(--thirsty)}
+.gauge small{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.due{font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+.due.late{color:var(--thirsty-ink)}
+.due.now{color:var(--thirsty-ink)}
+.due.soon{color:var(--ink)}
+.due.later{color:var(--muted);font-weight:500}
+.row-act{display:flex;justify-content:flex-end}
+.row-act .btn{width:100%}
+.undo{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--fine-ink);font-weight:500;padding:0 0 12px 68px;margin-top:-6px}
+.more{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--dur-3) var(--ease-out)}
+.row.open .more{grid-template-rows:1fr}
+.more > div{overflow:hidden}
+.more-in{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:4px 0 20px 68px}
+.more h3{font:600 13px/1.3 var(--text);color:var(--muted);margin:0 0 6px}
+.hist{list-style:none;margin:0;padding:0;font-size:14px;font-variant-numeric:tabular-nums}
+.hist li{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px dashed var(--rule)}
+.hist li span:last-child{color:var(--muted)}
+.notes{font-size:14px;margin:0 0 12px;text-wrap:pretty}
+.notes.empty{color:var(--muted)}
+.more-actions{display:flex;flex-wrap:wrap;gap:8px}
+.more-actions .btn{height:36px;font-size:14px}
+.confirm{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px 14px;border-radius:var(--r-2);background:#F7E6E3;font-size:14px}
+.confirm p{margin:0 auto 0 0}
+.empty-state{padding:24px 0 8px;display:grid;grid-template-columns:120px 1fr;gap:24px;align-items:center}
+.empty-state h2{font:700 26px/1.15 var(--display);margin:0 0 6px}
+.empty-state p{margin:0 0 14px;color:var(--muted);max-width:40ch}
+.empty-state .btns{display:flex;flex-wrap:wrap;gap:8px}
+.none-in-room{padding:24px 0;color:var(--muted)}
+
+/* aside */
+aside h2{font:700 22px/1.2 var(--display);margin:0 0 4px}
+aside .sub{font-size:14px;color:var(--muted);margin:0 0 14px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:0;border-top:1px solid var(--rule-strong);border-left:1px solid var(--rule)}
+.day{min-height:84px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:6px 4px 4px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.day .dn{font-size:12px;font-weight:600;color:var(--muted);line-height:1.2}
+.day .dd{font:700 16px/1 var(--display);font-variant-numeric:tabular-nums}
+.day.is-today{background:var(--thirsty-tint)}
+.day.is-today .dn{color:var(--thirsty-ink)}
+.day .pots{display:flex;flex-wrap:wrap;justify-content:center;gap:0;margin-top:2px}
+.day .pots svg{width:18px;height:24px;display:block}
+.day .more-n{font-size:12px;color:var(--muted);font-weight:600}
+.recent{margin-top:40px}
+.log{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule-strong)}
+.log li{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--rule);font-size:16px}
+.log li svg{width:28px;height:36px;display:block}
+.log time{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+
+/* dialog */
+dialog.sheet{border:0;padding:0;margin:0 0 0 auto;height:100dvh;max-height:100dvh;width:min(480px,100vw);max-width:100vw;background:var(--page);color:var(--ink);box-shadow:-24px 0 60px rgba(30,35,32,.18)}
+dialog.sheet::backdrop{background:rgba(30,35,32,.38)}
+@media (prefers-reduced-motion:no-preference){
+  dialog.sheet[open]{animation:slidein var(--dur-3) var(--ease-out)}
+}
+@keyframes slidein{from{transform:translateX(40px);opacity:0}}
+.sheet form{display:flex;flex-direction:column;height:100%}
+.sheet header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 12px;border-bottom:1px solid var(--rule);background:var(--wall)}
+.sheet header h2{font:700 22px/1.2 var(--display);margin:0}
+.x{width:36px;height:36px;border-radius:var(--r-1);border:1px solid var(--rule);background:transparent;display:grid;place-items:center}
+.x:hover{border-color:var(--ink)}
+.sheet .body{flex:1;overflow:auto;padding:20px 24px 24px;display:grid;gap:20px;align-content:start}
+.field{display:grid;gap:6px}
+.field > label,.field legend{font-weight:600;font-size:14px}
+.field .hint{font-size:12px;color:var(--muted)}
+.field .err{font-size:14px;color:#9B2F22;font-weight:500}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+input[type=text],input[type=date],textarea,select{width:100%;height:44px;padding:0 12px;border-radius:var(--r-1);border:1px solid var(--rule);background:var(--surface)}
+textarea{height:auto;min-height:80px;padding:10px 12px;resize:vertical;line-height:1.45}
+input:hover,textarea:hover,select:hover{border-color:#9aa39d}
+input[aria-invalid=true]{border-color:#9B2F22}
+.kinds{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px}
+.kind{position:relative}
+.kind input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.kind span{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px 8px;border:1px solid var(--rule);border-radius:var(--r-2);background:var(--surface);font-size:12px;font-weight:500;text-align:center;line-height:1.2;transition:border-color var(--dur-2),background var(--dur-2)}
+.kind svg{width:42px;height:56px}
+.kind input:checked + span{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--wall)}
+.kind input:focus-visible + span{outline:2px solid var(--water);outline-offset:2px}
+.glazes{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.glaze{position:relative}
+.glaze input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.glaze span{display:block;width:36px;height:36px;border-radius:50%;border:1px solid rgba(30,35,32,.25)}
+.glaze input:checked + span{box-shadow:0 0 0 2px var(--page),0 0 0 4px var(--ink)}
+.glaze input:focus-visible + span{outline:2px solid var(--water);outline-offset:5px}
+.stepper{display:flex;align-items:center;gap:0;width:max-content;border:1px solid var(--rule);border-radius:var(--r-1);background:var(--surface)}
+.stepper button{width:44px;height:44px;border:0;background:none;font-size:19px;line-height:1}
+.stepper button:hover{background:var(--wall)}
+.stepper input{width:56px;height:44px;border:0;border-left:1px solid var(--rule);border-right:1px solid var(--rule);text-align:center;font:700 19px/1 var(--display);font-variant-numeric:tabular-nums;background:transparent;-moz-appearance:textfield}
+.stepper input::-webkit-inner-spin-button{appearance:none}
+.stepper-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sheet footer{display:flex;gap:8px;padding:16px 24px;border-top:1px solid var(--rule);background:var(--page)}
+.sheet footer .btn{height:44px}
+.sheet footer .grow{flex:1}
+
+@media (max-width:900px){
+  main .wrap{grid-template-columns:1fr;gap:48px}
+}
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+  .today{display:none}
+  .hero .wrap{padding-top:24px}
+  .detail{font-size:17px}
+  .row-main{grid-template-columns:44px minmax(0,1fr) auto;grid-template-areas:"art name act" "art gauge due";gap:6px 12px}
+  .row-art{grid-area:art;align-self:start}
+  .row-art svg{width:44px;height:56px}
+  .row-name{grid-area:name}
+  .gauge{grid-area:gauge}
+  .gauge small{display:none}
+  .due{grid-area:due;text-align:right;font-size:14px}
+  .row-act{grid-area:act}
+  .row-act .btn{width:auto;height:38px;padding:0 12px}
+  .undo{padding-left:56px}
+  .more-in{grid-template-columns:1fr;padding-left:56px;gap:16px}
+  .empty-state{grid-template-columns:80px 1fr;gap:16px}
+  dialog.sheet{margin:auto 0 0;height:92dvh;width:100vw;border-radius:var(--r-3) var(--r-3) 0 0}
+  .sheet header{border-radius:var(--r-3) var(--r-3) 0 0;padding:16px 16px 12px}
+  .sheet .body{padding:16px}
+  .sheet footer{padding:12px 16px}
+  .two{grid-template-columns:1fr}
+  .kinds{grid-template-columns:repeat(4,1fr);gap:6px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<!-- shared paint for every pot: one light from the top left -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs id="glaze-defs"></defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 22 26" aria-hidden="true"><path d="M11 13C11 7 7 3 2 3c0 5 4 9 9 10Zm0 0c0-5 3-9 9-10 0 6-4 10-9 10Z" fill="#4E7A45"/><path d="M3 14h16l-2 11H5Z" fill="#B8694A"/><path d="M3 14h16v2.5H3Z" fill="#9C5438"/></svg>
+      Sill
+    </div>
+    <span class="today" id="today"></span>
+    <button class="btn btn-ink" id="add-btn" type="button"><svg viewBox="0 0 14 16" aria-hidden="true"><path d="M7 2v12M1 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add plant</button>
+  </div>
+</header>
+
+<section class="hero" aria-labelledby="keyline">
+  <div class="wrap">
+    <h1 class="keyline" id="keyline" aria-live="polite"></h1>
+    <p class="detail" id="detail"></p>
+    <div class="examples" id="examples" hidden></div>
+    <div class="sill-scroll" id="sill-scroll"></div>
+  </div>
+</section>
+
+<main>
+  <div class="wrap">
+    <section aria-labelledby="sched-h">
+      <h2 class="sr" id="sched-h">Watering schedule</h2>
+      <div class="filters" id="filters" role="group" aria-label="Filter by room"></div>
+      <div id="schedule"></div>
+    </section>
+    <aside>
+      <section aria-labelledby="cal-h">
+        <h2 id="cal-h">Next two weeks</h2>
+        <p class="sub">Who needs water on which day, if you keep to the schedule.</p>
+        <div class="cal" id="cal"></div>
+      </section>
+      <section class="recent" aria-labelledby="log-h">
+        <h2 id="log-h">Recently watered</h2>
+        <p class="sub">The last six waterings, across all plants.</p>
+        <ul class="log" id="log"></ul>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<dialog class="sheet" id="sheet" aria-labelledby="sheet-title">
+  <form id="plant-form" novalidate>
+    <header>
+      <h2 id="sheet-title">Add a plant</h2>
+      <button class="x" type="button" data-close aria-label="Close"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2 2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    </header>
+    <div class="body">
+      <div class="field">
+        <label for="f-name">Name</label>
+        <input type="text" id="f-name" name="name" maxlength="60" autocomplete="off" placeholder="e.g. Monstera by the bookshelf">
+        <span class="err" id="f-name-err" hidden>Give the plant a name so you can tell it apart from the others.</span>
+      </div>
+      <fieldset class="field">
+        <legend>Kind</legend>
+        <div class="kinds" id="f-kinds"></div>
+      </fieldset>
+      <fieldset class="field">
+        <legend>Pot</legend>
+        <div class="glazes" id="f-glazes"></div>
+      </fieldset>
+      <div class="field">
+        <label for="f-every">Water every</label>
+        <div class="stepper-row">
+          <div class="stepper">
+            <button type="button" data-step="-1" aria-label="One day less">−</button>
+            <input type="number" id="f-every" name="every" min="1" max="60" inputmode="numeric">
+            <button type="button" data-step="1" aria-label="One day more">+</button>
+          </div>
+          <span>days</span>
+        </div>
+        <span class="hint" id="f-every-hint"></span>
+      </div>
+      <div class="two">
+        <div class="field">
+          <label for="f-room">Room</label>
+          <input type="text" id="f-room" name="room" list="rooms" maxlength="30" placeholder="Living room">
+          <datalist id="rooms"></datalist>
+        </div>
+        <div class="field">
+          <label for="f-last">Last watered</label>
+          <input type="date" id="f-last" name="last">
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-notes">Notes <span class="hint">(optional)</span></label>
+        <textarea id="f-notes" name="notes" maxlength="400" placeholder="Bottom-water only, likes a mist in summer…"></textarea>
+      </div>
+    </div>
+    <footer>
+      <button class="btn btn-ghost" type="button" data-close>Cancel</button>
+      <span class="grow"></span>
+      <button class="btn btn-ink" type="submit" id="f-submit">Add to the sill</button>
+    </footer>
+  </form>
+</dialog>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- dates (local calendar days) ---------- */
+const DAY = 86400000;
+const startOf = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const TODAY = startOf(new Date());
+const key = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const diff = (a, b) => Math.round((startOf(a) - startOf(b)) / DAY);
+const fmtWeekday = d => d.toLocaleDateString('en-GB', { weekday:'long' });
+const fmtShort = d => d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
+const fmtLong = d => d.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
+
+/* ---------- catalogue ---------- */
+const KINDS = {
+  monstera: { label:'Monstera',        every:7,  range:'every 7–10 days' },
+  snake:    { label:'Snake plant',     every:14, range:'every 2–3 weeks' },
+  cactus:   { label:'Cactus',          every:21, range:'every 3–4 weeks, less in winter' },
+  fern:     { label:'Fern',            every:3,  range:'every 2–4 days; never let it dry out' },
+  pothos:   { label:'Pothos',          every:6,  range:'every 5–7 days' },
+  fiddle:   { label:'Fiddle-leaf fig', every:7,  range:'every 7–10 days' },
+  zz:       { label:'ZZ plant',        every:14, range:'every 2–3 weeks' },
+  lily:     { label:'Peace lily',      every:5,  range:'every 4–6 days; it droops when thirsty' },
+};
+const GLAZES = {
+  clay:     { label:'Terracotta', base:'#B8694A', hi:'#D08766', lo:'#8F4C33', rim:'#A65B3F' },
+  bone:     { label:'Speckled bone', base:'#E6E0D4', hi:'#F6F2EA', lo:'#C3BBAB', rim:'#D6CEBF', speck:'#6D6558' },
+  indigo:   { label:'Indigo glaze', base:'#34507A', hi:'#4F6E9A', lo:'#22385A', rim:'#2B4468' },
+  celadon:  { label:'Celadon', base:'#9DB8A5', hi:'#BCD2C2', lo:'#7A9683', rim:'#8BA894' },
+  charcoal: { label:'Charcoal', base:'#3D3E3B', hi:'#5A5B56', lo:'#262725', rim:'#333431' },
+  ochre:    { label:'Ochre glaze', base:'#C98E3A', hi:'#DDA95B', lo:'#A06D25', rim:'#B67E30' },
+};
+(function paintDefs(){
+  let s = '';
+  for (const [k,g] of Object.entries(GLAZES)) {
+    s += `<linearGradient id="g-${k}" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="${g.hi}"/><stop offset=".38" stop-color="${g.base}"/><stop offset="1" stop-color="${g.lo}"/></linearGradient>`;
+  }
+  s += `<linearGradient id="g-wood" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#9E7B52"/><stop offset="1" stop-color="#7D5F3E"/></linearGradient>`;
+  s += `<linearGradient id="g-tube" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#E7ECEF" stop-opacity=".8"/></linearGradient>`;
+  document.getElementById('glaze-defs').innerHTML = s;
+})();
+
+/* ---------- small helpers ---------- */
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const rad = d => d * Math.PI / 180;
+const f1 = n => Math.round(n * 10) / 10;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function hex2rgb(h){ const n = parseInt(h.slice(1),16); return [n>>16&255, n>>8&255, n&255]; }
+function mix(a, b, t){ const A = hex2rgb(a), B = hex2rgb(b); return '#' + A.map((v,i) => Math.round(v + (B[i]-v)*t).toString(16).padStart(2,'0')).join(''); }
+function hash(str){ let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed){ let a = seed || 1; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+let UID = 0;
+
+/* ---------- parametric plant drawing ----------
+   draw(kind, { m, glaze, seed, lod, stake }) -> SVG markup in a 120×160 box.
+   m: moisture, 1 = just watered, 0 = due today, < 0 = late.
+   Kind sets the silhouette; thirst sets the droop and the leaf colour. */
+const FRESH = ['#2F5E34', '#4C7F43', '#79A860'];
+const DRY   = ['#6E6A33', '#948B45', '#BDB068'];
+const leafTone = (i, t) => mix(FRESH[i], DRY[i], t * 0.85);
+
+function leafPath(l, w, shape){
+  if (shape === 'fiddle') return `M0 0C${f1(w*.5)} ${f1(-l*.2)} ${f1(w*1.15)} ${f1(-l*.62)} ${f1(w*.2)} ${f1(-l)}C${f1(-w*.2)} ${f1(-l*1.02)} ${f1(-w*1.15)} ${f1(-l*.62)} ${f1(-w*.5)} ${f1(-l*.2)}C${f1(-w*.25)} ${f1(-l*.08)} 0 0 0 0Z`;
+  if (shape === 'heart') return `M0 0C${f1(-w*.4)} 0 ${f1(-w)} ${f1(-l*.18)} ${f1(-w)} ${f1(-l*.5)}C${f1(-w)} ${f1(-l*.85)} ${f1(-w*.4)} ${f1(-l)} 0 ${f1(-l)}C${f1(w*.4)} ${f1(-l)} ${f1(w)} ${f1(-l*.85)} ${f1(w)} ${f1(-l*.5)}C${f1(w)} ${f1(-l*.18)} ${f1(w*.4)} 0 0 0Z`;
+  return `M0 0C${f1(w)} ${f1(-l*.25)} ${f1(w*.9)} ${f1(-l*.72)} 0 ${f1(-l)}C${f1(-w*.9)} ${f1(-l*.72)} ${f1(-w)} ${f1(-l*.25)} 0 0Z`;
+}
+function leaf(x, y, a, l, w, t, opt = {}){
+  const tone = opt.tone ?? 1;
+  const fill = opt.fill || leafTone(tone, t);
+  const d = leafPath(l, w, opt.shape);
+  let s = `<g transform="translate(${f1(x)} ${f1(y)}) rotate(${f1(a)})">`;
+  if (opt.mask) s += opt.mask.defs;
+  s += `<path d="${d}" fill="${fill}"${opt.mask ? ` mask="url(#${opt.mask.id})"` : ''}/>`;
+  if (!opt.lo) {
+    s += `<path d="M0 ${f1(-l*.04)}Q${f1(w*.08)} ${f1(-l*.5)} 0 ${f1(-l*.93)}" stroke="${leafTone(0, t)}" stroke-width="${f1(Math.max(.8, w*.07))}" fill="none" opacity=".55"${opt.mask ? ` mask="url(#${opt.mask.id})"` : ''}/>`;
+    s += `<path d="M${f1(-w*.15)} ${f1(-l*.2)}C${f1(-w*.75)} ${f1(-l*.35)} ${f1(-w*.7)} ${f1(-l*.7)} ${f1(-w*.1)} ${f1(-l*.88)}" stroke="#fff" stroke-opacity=".22" stroke-width="${f1(Math.max(1, w*.12))}" fill="none" stroke-linecap="round"/>`;
+  }
+  if (opt.extra) s += opt.extra;
+  return s + '</g>';
+}
+// integrate a curving stem: angle from vertical (deg, + is right), curl spreads over the length
+function curve(x, y, a, len, curl, steps = 10){
+  const pts = []; const ds = len / steps;
+  for (let i = 0; i <= steps; i++) {
+    pts.push({ x, y, a });
+    x += Math.sin(rad(a)) * ds; y -= Math.cos(rad(a)) * ds; a += curl / steps;
+  }
+  return pts;
+}
+const poly = pts => 'M' + pts.map(p => `${f1(p.x)} ${f1(p.y)}`).join('L');
+const side = a => (a >= 0 ? 1 : -1);
+
+const PLANTS = {
+  monstera(t, r, lo){
+    const stems = [[-58, 46, 30], [-22, 64, 34], [18, 70, 36], [52, 50, 31]];
+    let back = '', front = '';
+    stems.forEach(([a, len, size], i) => {
+      a += (r() - .5) * 8; const droop = side(a) * t * 28;
+      const pts = curve(60 + (i - 1.5) * 3, 108, a * .55, len, a * .6 + droop, 8);
+      const tip = pts[pts.length - 1];
+      back += `<path d="${poly(pts)}" stroke="${mix('#5E7F43', '#8A8445', t)}" stroke-width="${lo ? 3 : 2.2}" fill="none" stroke-linecap="round"/>`;
+      const id = 'm' + (++UID); const l = size, w = size * .52;
+      let cuts = '';
+      if (!lo) {
+        for (const f of [.26, .5, .72]) {
+          cuts += `M${f1(-w*1.1)} ${f1(-l*f)}L${f1(-w*.32)} ${f1(-l*(f+.06))}M${f1(w*1.1)} ${f1(-l*f)}L${f1(w*.32)} ${f1(-l*(f+.06))}`;
+        }
+      } else {
+        cuts = `M${f1(-w*1.1)} ${f1(-l*.45)}L${f1(-w*.35)} ${f1(-l*.5)}M${f1(w*1.1)} ${f1(-l*.45)}L${f1(w*.35)} ${f1(-l*.5)}`;
+      }
+      const holes = lo ? '' : `<ellipse cx="${f1(-w*.2)}" cy="${f1(-l*.38)}" rx="${f1(w*.06)}" ry="${f1(l*.035)}" fill="#000"/><ellipse cx="${f1(w*.22)}" cy="${f1(-l*.62)}" rx="${f1(w*.06)}" ry="${f1(l*.035)}" fill="#000"/>`;
+      const mask = { id, defs: `<mask id="${id}" maskUnits="userSpaceOnUse" x="-60" y="-80" width="120" height="100"><rect x="-60" y="-80" width="120" height="100" fill="#fff"/><path d="${cuts}" stroke="#000" stroke-width="${f1(l*(lo ? .09 : .055))}" stroke-linecap="round"/>${holes}</mask>` };
+      front += leaf(tip.x, tip.y + 2, tip.a * .9 + side(tip.a) * 12, l, w, t, { shape:'heart', mask, tone: i % 2 ? 0 : 1, lo });
+    });
+    return back + front;
+  },
+  snake(t, r, lo){
+    const blades = [[-16, 66, 7], [-7, 84, 8.5], [1, 92, 9], [9, 78, 8], [17, 60, 7]];
+    let s = '';
+    blades.forEach(([a, l, w], i) => {
+      a += (r() - .5) * 4 + side(a) * t * 7;
+      const band = lo ? '' : [.3, .5, .7].map(f => `<path d="M${f1(-w*.55)} ${f1(-l*f)}q${f1(w*.55)} -3 ${f1(w*1.1)} 0" stroke="${mix('#9FBF7F', '#CFC58A', t)}" stroke-width="1.4" fill="none" opacity=".75"/>`).join('');
+      const edge = lo ? '' : `<path d="${leafPath(l, w * .96)}" fill="none" stroke="${mix('#C9C06A', '#D8B25A', t)}" stroke-width="1.1"/>`;
+      s += leaf(58 + (i - 2) * 4, 110, a, l, w, t, { tone: i % 2 ? 0 : 1, lo: true, extra: band + edge });
+    });
+    return s;
+  },
+  cactus(t, r, lo){
+    const body = mix('#4F7D52', '#8C8B4E', t * .8), dark = mix('#355B3A', '#6B6A38', t * .8), hi = mix('#83AE7C', '#B5AE72', t * .8);
+    let s = `<path d="M74 86h8a4 4 0 0 0 4-4V62a6 6 0 0 1 12 0v22a14 14 0 0 1-14 14h-10Z" fill="${dark}"/>`;
+    s += `<rect x="46" y="44" width="28" height="68" rx="14" fill="${body}"/>`;
+    s += `<path d="M86 62a6 6 0 0 1 12 0v22a14 14 0 0 1-14 14" fill="none" stroke="${body}" stroke-width="0"/>`;
+    s += `<rect x="86" y="56" width="12" height="32" rx="6" fill="${body}"/>`;
+    if (!lo) {
+      s += [53, 60, 67].map(x => `<path d="M${x} ${x === 60 ? 46 : 50}V110" stroke="${dark}" stroke-width="1.3" opacity=".6"/>`).join('');
+      s += `<path d="M92 58V86" stroke="${dark}" stroke-width="1.2" opacity=".6"/>`;
+      s += `<path d="M50 56Q49 80 51 104" stroke="${hi}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>`;
+      for (let i = 0; i < 12; i++) { const x = [53, 60, 67][i % 3], y = 54 + Math.floor(i / 3) * 13 + (i % 3) * 3; s += `<path d="M${x-1.6} ${y}h3.2M${x} ${y-1.6}v3.2" stroke="#F3EEDD" stroke-width=".8"/>`; }
+      s += `<ellipse cx="60" cy="44" rx="5" ry="3.2" fill="#E88A5A"/><ellipse cx="60" cy="42.6" rx="2.4" ry="1.6" fill="#F4B48A"/>`;
+    }
+    return s;
+  },
+  fern(t, r, lo){
+    const fronds = [-72, -52, -32, -12, 8, 28, 48, 68];
+    let s = '';
+    fronds.forEach((a0, i) => {
+      a0 += (r() - .5) * 8;
+      const len = 42 + r() * 16 - Math.abs(a0) * .08;
+      const curl = side(a0) * (38 + Math.abs(a0) * .5 + t * 55);
+      const pts = curve(60, 108, a0 * .45, len, curl, 12);
+      const col = leafTone(i % 2 ? 1 : 0, t);
+      s += `<path d="${poly(pts)}" stroke="${col}" stroke-width="${lo ? 2.4 : 1.3}" fill="none" stroke-linecap="round"/>`;
+      pts.slice(2).forEach((p, k, arr) => {
+        const L = (lo ? 7 : 8) * (1 - k / arr.length) + 2.2;
+        const nx = Math.cos(rad(p.a)), ny = Math.sin(rad(p.a));
+        const sweep = 0.5; // leaflets angle toward the tip
+        const tx = Math.sin(rad(p.a)) * sweep, ty = -Math.cos(rad(p.a)) * sweep;
+        s += `<path d="M${f1(p.x)} ${f1(p.y)}l${f1((nx + tx) * L)} ${f1((ny + ty) * L)}M${f1(p.x)} ${f1(p.y)}l${f1((-nx + tx) * L)} ${f1((-ny + ty) * L)}" stroke="${col}" stroke-width="${lo ? 3.2 : 2.4}" stroke-linecap="round"/>`;
+      });
+    });
+    return s;
+  },
+  pothos(t, r, lo){
+    let s = '';
+    [[-30, 34], [-4, 44], [24, 36]].forEach(([a, len], i) => {
+      a += side(a) * t * 26;
+      const pts = curve(60, 108, a * .6, len, a * .5, 6), tip = pts[pts.length - 1];
+      s += `<path d="${poly(pts)}" stroke="${mix('#6F8F48', '#8F8845', t)}" stroke-width="1.6" fill="none"/>`;
+      s += leaf(tip.x, tip.y, tip.a, 22, 12, t, { shape:'heart', tone: i === 1 ? 2 : 1, lo, extra: lo ? '' : `<path d="M-4 -6q3 -6 8 -10" stroke="#EDE7B8" stroke-width="1.6" fill="none" opacity=".8" stroke-linecap="round"/>` });
+    });
+    return s;
+  },
+  pothosFront(t, r, lo){
+    let s = '';
+    [[33, 108, 186, 44, -30], [87, 108, 172, 50, 26], [40, 110, 200, 30, -16]].forEach(([x, y, a, len, curl], i) => {
+      const pts = curve(x, y, a, len, curl, 10);
+      s += `<path d="${poly(pts)}" stroke="${mix('#6F8F48', '#8F8845', t)}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+      pts.forEach((p, k) => {
+        if (k < 1 || k % 2) return;
+        const sgn = k % 4 ? 1 : -1;
+        s += leaf(p.x, p.y, p.a - 180 + sgn * (70 + t * 25), 12 - k * .35, 7 - k * .2, t, { shape:'heart', tone: (k + i) % 3 === 0 ? 2 : 1, lo: true });
+      });
+    });
+    return s;
+  },
+  fiddle(t, r, lo){
+    const trunk = curve(60, 108, -3, 86, 8, 10);
+    let s = `<path d="${poly(trunk)}" stroke="#7A5E43" stroke-width="${lo ? 4 : 3.2}" fill="none" stroke-linecap="round"/>`;
+    const at = [3, 4, 5, 6, 7, 8, 9, 10];
+    at.forEach((k, j) => {
+      const p = trunk[k]; const sgn = j % 2 ? 1 : -1;
+      const size = 20 + j * 1.8;
+      const a = sgn * (62 - j * 5) + sgn * t * 30 + (r() - .5) * 6;
+      s += leaf(p.x, p.y, a, size, size * .42, t, { shape:'fiddle', tone: j % 3 === 0 ? 0 : 1, lo });
+    });
+    s += leaf(trunk[10].x, trunk[10].y + 2, 4 + t * 20, 24, 10, t, { shape:'fiddle', tone: 2, lo });
+    return s;
+  },
+  zz(t, r, lo){
+    let s = '';
+    [[-40, 64], [-18, 78], [4, 86], [24, 74], [44, 58]].forEach(([a, len], i) => {
+      a += (r() - .5) * 6;
+      const pts = curve(58 + i * 1.5, 108, a * .5, len, side(a) * (14 + t * 22), 10);
+      s += `<path d="${poly(pts)}" stroke="${mix('#3E5A2E', '#6E6A33', t)}" stroke-width="${lo ? 2.8 : 2}" fill="none" stroke-linecap="round"/>`;
+      pts.forEach((p, k) => {
+        if (k < 3 || k % 2 === 0 && k !== 10) return;
+        const L = 10 + (k < 9 ? 2 : -1);
+        s += leaf(p.x, p.y, p.a - 48, L, L * .42, t, { tone: 0, lo: true, extra: lo ? '' : `<path d="M-1 -3q-2 -3 -1 -6" stroke="#fff" stroke-opacity=".35" stroke-width="1.3" fill="none" stroke-linecap="round"/>` });
+        s += leaf(p.x, p.y, p.a + 48, L, L * .42, t, { tone: 0, lo: true });
+      });
+      const tip = pts[pts.length - 1];
+      s += leaf(tip.x, tip.y, tip.a, 10, 4.2, t, { tone: 0, lo: true });
+    });
+    return s;
+  },
+  lily(t, r, lo){
+    let s = '';
+    // flowers first so leaves overlap the stalk bases
+    [[-6, 70], [12, 62]].forEach(([a, len], i) => {
+      const pts = curve(60, 108, a * .5 + side(a) * t * 30, len * (1 - t * .15), side(a) * (4 + t * 60), 8), tip = pts[pts.length - 1];
+      s += `<path d="${poly(pts)}" stroke="${mix('#5E8A4B', '#8C8445', t)}" stroke-width="1.6" fill="none"/>`;
+      const sp = mix('#FBFAF3', '#E7E1C7', t);
+      s += `<g transform="translate(${f1(tip.x)} ${f1(tip.y)}) rotate(${f1(tip.a)})"><path d="M0 2C9 -4 9 -18 1 -28C-7 -18 -8 -4 0 2Z" fill="${sp}" stroke="#D8D4C2" stroke-width=".6"/><path d="M0 -2V-15" stroke="#E8D98A" stroke-width="3.2" stroke-linecap="round"/></g>`;
+    });
+    [-64, -44, -26, -8, 10, 28, 46, 64].forEach((a, i) => {
+      a += (r() - .5) * 8;
+      const pts = curve(60, 108, a * .5, 20 + (i % 3) * 5, side(a) * t * 50, 5), tip = pts[pts.length - 1];
+      s += `<path d="${poly(pts)}" stroke="${leafTone(1, t)}" stroke-width="1.6" fill="none"/>`;
+      s += leaf(tip.x, tip.y, tip.a + side(a) * (8 + t * 60), 36 - Math.abs(a) * .08, 8.5, t, { tone: i % 2 ? 0 : 1, lo });
+    });
+    return s;
+  },
+};
+
+function pot(glaze, m, lo, seed){
+  const g = GLAZES[glaze] || GLAZES.clay;
+  const soil = mix('#8E6E50', '#3F2D22', clamp(m, 0, 1));
+  let s = `<ellipse cx="60" cy="155" rx="33" ry="3.6" fill="#28201A" opacity=".2"/>`;
+  s += `<path d="M34 114H86L80.4 151.5Q80 154 77.5 154H42.5Q40 154 39.6 151.5Z" fill="url(#g-${glaze})"/>`;
+  s += `<rect x="30" y="104" width="60" height="11" rx="2" fill="${g.rim}"/><rect x="30" y="104" width="60" height="11" rx="2" fill="url(#g-${glaze})" opacity=".75"/>`;
+  s += `<path d="M34 115H86" stroke="${g.lo}" stroke-width="1.2" opacity=".6"/>`;
+  if (!lo) {
+    s += `<path d="M37 119Q38 136 43 150" stroke="#fff" stroke-opacity=".28" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    if (g.speck) { const r = rng(seed ^ 77); for (let i = 0; i < 18; i++) s += `<circle cx="${f1(38 + r() * 44)}" cy="${f1(106 + r() * 46)}" r="${f1(.4 + r() * .5)}" fill="${g.speck}" opacity=".55"/>`; }
+  }
+  return { soil: `<ellipse cx="60" cy="104.6" rx="27.5" ry="2.8" fill="${soil}"/>`, body: s };
+}
+function stake(m){
+  const lvl = clamp(m, 0, 1), h = 25 * lvl;
+  const col = m <= 0.15 ? '#B26B12' : '#1F6F8B';
+  return `<g><rect x="79" y="72" width="8" height="36" rx="4" fill="url(#g-tube)" stroke="#8D9892" stroke-width=".8"/>`
+    + `<rect x="80.8" y="${f1(100.5 - h)}" width="4.4" height="${f1(h + 3.5)}" rx="2.2" fill="${col}"/>`
+    + `<rect x="80.5" y="69" width="5" height="4" rx="1.2" fill="#3D3E3B"/></g>`;
+}
+function drawInner(p, m, { lo = false, withStake = false } = {}){
+  const t = clamp((0.25 - m) / 0.5, 0, 1);
+  const seed = hash(p.id), r = rng(seed);
+  const pt = pot(p.glaze, m, lo, seed);
+  const fn = PLANTS[p.kind] || PLANTS.monstera;
+  let s = pt.soil + `<g>${fn(t, r, lo)}</g>`;
+  if (withStake) s += stake(m);
+  s += pt.body;
+  if (p.kind === 'pothos') s += PLANTS.pothosFront(t, rng(seed ^ 9), lo);
+  return s;
+}
+const plantSVG = (p, m, opts = {}) =>
+  `<svg viewBox="0 0 120 160" aria-hidden="true" focusable="false" data-art="${esc(p.id)}" data-lo="${opts.lo ? 1 : 0}" data-stake="${opts.withStake ? 1 : 0}">${drawInner(p, m, opts)}</svg>`;
+
+/* ---------- state ---------- */
+const STORE = 'sill.v1';
+function seedPlants(){
+  // Example plants, relative to today so the app always opens mid-week.
+  const ex = [
+    ['Kitchen pothos',       'pothos',   'bone',     'Kitchen',     5, 6, 'Trails off the top of the fridge. Rotate it every other watering so the vines grow evenly.'],
+    ['Boston fern',          'fern',     'celadon',  'Bathroom',    3, 3, 'Loves the steam from the shower. Water when the top of the soil feels dry.'],
+    ['ZZ plant',             'zz',       'charcoal', 'Office',      14, 13, ''],
+    ['Monstera by the shelf','monstera', 'clay',     'Living room', 7, 5, 'New leaf unfurling. Wipe the leaves when you water.'],
+    ['Peace lily',           'lily',     'indigo',   'Bedroom',     5, 2, 'Droops dramatically when thirsty and perks up within an hour of a drink.'],
+    ['Fiddle-leaf fig',      'fiddle',   'ochre',    'Living room', 7, 2, 'Don’t move it. It drops leaves when it’s moved.'],
+    ['Snake plant',          'snake',    'bone',     'Bedroom',     14, 4, ''],
+    ['Golden barrel cactus', 'cactus',   'clay',     'Office',      21, 9, 'Only in the growing season; once a month from November.'],
+  ];
+  return ex.map(([name, kind, glaze, room, every, since, notes], i) => {
+    const last = addDays(TODAY, -since);
+    const history = [key(last)];
+    for (let k = 1; k < 4; k++) history.push(key(addDays(last, -every * k + ((i + k) % 3 === 0 ? 1 : 0))));
+    return { id: 'ex-' + kind + i, name, kind, glaze, room, every, history, notes, example: true };
+  });
+}
+function load(){
+  try { const raw = localStorage.getItem(STORE); if (raw) { const d = JSON.parse(raw); if (d && Array.isArray(d.plants)) return d; } } catch (e) {}
+  return { plants: seedPlants(), room: 'all' };
+}
+let state = load();
+function save(){ try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} }
+
+const lastWatered = p => p.history.length ? parse(p.history[0]) : TODAY;
+function nextDue(p){
+  let d = addDays(lastWatered(p), p.every);
+  if (p.snoozedTo && parse(p.snoozedTo) > d) d = parse(p.snoozedTo);
+  return d;
+}
+const daysLeft = p => diff(nextDue(p), TODAY);
+const moisture = p => clamp(daysLeft(p) / p.every, -0.5, 1);
+const byUrgency = (a, b) => daysLeft(a) - daysLeft(b) || a.name.localeCompare(b.name);
+
+const WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve'];
+const word = n => WORDS[n] || String(n);
+function dueLabel(d){
+  if (d < 0) return `${-d} day${d === -1 ? '' : 's'} late`;
+  if (d === 0) return 'Today';
+  if (d === 1) return 'Tomorrow';
+  if (d < 7) return fmtWeekday(addDays(TODAY, d));
+  return `In ${d} days`;
+}
+function dueWords(d){
+  if (d < 0) return -d === 1 ? 'a day late' : `${-d} days late`;
+  if (d === 0) return 'today';
+  if (d === 1) return 'tomorrow';
+  if (d < 7) return 'on ' + fmtWeekday(addDays(TODAY, d));
+  return `in ${d} days`;
+}
+function ago(k){
+  const d = diff(TODAY, parse(k));
+  if (d === 0) return 'Today';
+  if (d === 1) return 'Yesterday';
+  if (d < 7) return `${d} days ago`;
+  return fmtShort(parse(k));
+}
+const joinNames = arr => arr.length < 2 ? (arr[0] || '') : arr.slice(0, -1).join(', ') + ' and ' + arr[arr.length - 1];
+
+/* ---------- render ---------- */
+const $ = id => document.getElementById(id);
+let firstPaint = true;
+const recent = {}; // id -> { prev, prevSnooze, until }
+let openId = null, confirmId = null;
+
+function renderHero(){
+  const plants = state.plants.slice().sort(byUrgency);
+  const now = plants.filter(p => daysLeft(p) <= 0);
+  const late = now.filter(p => daysLeft(p) < 0);
+  let head, detail;
+  if (!plants.length) {
+    head = 'Your sill is empty.';
+    detail = 'Add the plants you look after and Sill will tell you, each morning, which ones need a drink.';
+  } else if (!now.length) {
+    const nx = plants[0];
+    head = 'Nothing needs water today.';
+    detail = `<b>${esc(nx.name)}</b> is next, ${dueWords(daysLeft(nx))}.`;
+  } else {
+    head = now.length === 1 ? 'One plant needs water today.' : `${word(now.length)} plants need water today.`;
+    const parts = [];
+    const bold = arr => joinNames(arr.map(p => `<b>${esc(p.name)}</b>`));
+    if (late.length) parts.push(`${bold(late)} ${late.length > 1 ? 'are running late' : 'is ' + dueWords(daysLeft(late[0]))}.`);
+    const onTime = now.filter(p => daysLeft(p) === 0);
+    if (onTime.length) parts.push(`${bold(onTime)} ${onTime.length > 1 ? 'are' : 'is'} due today${late.length ? ' too' : ''}.`);
+    const after = plants.find(p => daysLeft(p) > 0);
+    if (after) parts.push(`After that, nothing until ${after.name} ${dueWords(daysLeft(after))}.`);
+    detail = parts.join(' ');
+  }
+  $('keyline').textContent = head;
+  $('detail').innerHTML = detail;
+  const exN = state.plants.filter(p => p.example).length;
+  const ex = $('examples');
+  ex.hidden = !exN;
+  if (exN) ex.innerHTML = `<span>${exN === state.plants.length ? `These ${word(exN).toLowerCase()} plants are examples, so you can see how Sill works.` : `${word(exN)} of these plants are examples.`}</span><button class="btn-text" type="button" data-act="clear-examples">Clear the examples</button>`;
+  renderSill(plants);
+}
+
+function renderSill(plants){
+  const box = $('sill-scroll');
+  const SLOT = 142, PAD = 20, H = 270, sillY = 196;
+  if (!plants.length) {
+    const w = 420;
+    box.innerHTML = `<svg width="${w}" height="${H}" viewBox="0 0 ${w} ${H}" role="img" aria-label="An empty windowsill">
+      ${sillBoard(w, sillY)}
+      <g transform="translate(150 ${sillY - 176}) scale(1.1)" opacity=".85"><ellipse cx="60" cy="155" rx="33" ry="3.6" fill="#28201A" opacity=".2"/><path d="M34 114H86L80.4 151.5Q80 154 77.5 154H42.5Q40 154 39.6 151.5Z" fill="url(#g-clay)"/><rect x="30" y="104" width="60" height="11" rx="2" fill="url(#g-clay)"/><ellipse cx="60" cy="104.6" rx="27.5" ry="2.8" fill="#8E6E50"/></g>
+    </svg>`;
+    return;
+  }
+  const w = Math.max(PAD * 2 + plants.length * SLOT, 320);
+  let s = `<svg width="${w}" height="${H}" viewBox="0 0 ${w} ${H}" role="group" aria-label="Your plants on the sill, most urgent on the left" class="${firstPaint ? 'enter' : ''}">`;
+  s += sillBoard(w, sillY);
+  plants.forEach((p, i) => {
+    const x = PAD + i * SLOT, d = daysLeft(p), m = moisture(p);
+    const cls = d < 0 ? 'late' : d === 0 ? 'now' : '';
+    const dueCol = d <= 0 ? '#8A5000' : d <= 2 ? '#1E2320' : '#59605B';
+    const name = p.name.length > 18 ? p.name.slice(0, 17) + '…' : p.name;
+    s += `<g class="slot ${cls}" tabindex="0" role="button" data-slot="${esc(p.id)}" style="--i:${i}" aria-label="${esc(p.name)}, water ${dueWords(d)}. Show in the schedule.">
+      <rect class="focus-ring" x="${x}" y="8" width="${SLOT - 8}" height="${H - 12}" rx="8" fill="transparent" stroke="none"/>
+      <g class="art"><svg x="${x + 2}" y="${sillY - 174}" width="130" height="174" viewBox="0 0 120 160" data-art="${esc(p.id)}" data-lo="0" data-stake="1" overflow="visible">${drawInner(p, m, { withStake: true })}</svg></g>
+      <g class="lbl"><text x="${x + 67}" y="${sillY + 44}" text-anchor="middle" font-family="Golos Text, system-ui, sans-serif" font-weight="600" font-size="14" fill="#1E2320" class="lbl-name">${esc(name)}</text>
+      <text x="${x + 67}" y="${sillY + 63}" text-anchor="middle" font-family="Golos Text, system-ui, sans-serif" font-weight="${d <= 0 ? 600 : 500}" font-size="14" fill="${dueCol}">${esc(dueLabel(d))}</text></g>
+    </g>`;
+  });
+  s += '</svg>';
+  box.innerHTML = s;
+}
+function sillBoard(w, y){
+  return `<rect x="0" y="${y}" width="${w}" height="7" fill="#C4A175"/><rect x="0" y="${y}" width="${w}" height="1.5" fill="#D9BE96"/>
+    <rect x="0" y="${y + 7}" width="${w}" height="15" fill="url(#g-wood)"/>
+    <rect x="0" y="${y + 22}" width="${w}" height="6" fill="#1E2320" opacity=".08"/>`;
+}
+
+function renderFilters(){
+  const rooms = [...new Set(state.plants.map(p => p.room).filter(Boolean))].sort();
+  if (state.room !== 'all' && !rooms.includes(state.room)) state.room = 'all';
+  $('filters').innerHTML = rooms.length > 1 ? ['all', ...rooms].map(r =>
+    `<button class="chip" type="button" data-room="${esc(r)}" aria-pressed="${state.room === r}">${r === 'all' ? 'All rooms' : esc(r)}</button>`).join('') : '';
+  $('rooms').innerHTML = [...new Set(['Living room', 'Kitchen', 'Bedroom', 'Bathroom', 'Office', 'Hallway', ...rooms])].map(r => `<option value="${esc(r)}">`).join('');
+}
+
+function rowHTML(p){
+  const d = daysLeft(p), m = moisture(p);
+  const cls = d < 0 ? 'late' : d === 0 ? 'now' : d <= 3 ? 'soon' : 'later';
+  const pct = Math.round(clamp(m, 0, 1) * 100);
+  const since = diff(TODAY, lastWatered(p));
+  const open = openId === p.id;
+  const rec = recent[p.id];
+  const hist = p.history.slice(0, 5).map((k, i) => {
+    const gap = p.history[i + 1] ? diff(parse(k), parse(p.history[i + 1])) : null;
+    return `<li><span>${esc(fmtShort(parse(k)))}</span><span>${gap ? `${gap} days after the last` : 'first logged'}</span></li>`;
+  }).join('');
+  return `<li class="row${open ? ' open' : ''}${rec && rec.flash ? ' flash' : ''}" data-id="${esc(p.id)}">
+    <div class="row-main">
+      <div class="row-art">${plantSVG(p, m, { lo: true })}</div>
+      <button class="row-name" type="button" data-act="toggle" aria-expanded="${open}" aria-controls="more-${esc(p.id)}">
+        <span class="nm">${esc(p.name)}</span>
+        <span class="meta">${esc(p.room || 'No room')}, every ${p.every} day${p.every === 1 ? '' : 's'}</span>
+      </button>
+      <div class="gauge" role="img" aria-label="Soil moisture about ${pct} percent">
+        <div class="track"><div class="fill${m <= .15 ? ' low' : ''}" style="width:${pct}%"></div></div>
+        <small>${since === 0 ? 'Watered today' : `Watered ${since} day${since === 1 ? '' : 's'} ago`}</small>
+      </div>
+      <div class="due ${cls}">${esc(dueLabel(d))}</div>
+      <div class="row-act">
+        <button class="btn ${d <= 0 ? 'btn-water' : 'btn-ghost'}" type="button" data-act="water" aria-label="Water ${esc(p.name)}"><svg viewBox="0 0 14 16" aria-hidden="true"><path d="M7 1.5C5 5 2.5 7.4 2.5 10.2a4.5 4.5 0 0 0 9 0C11.5 7.4 9 5 7 1.5Z" fill="currentColor"/></svg>Water</button>
+      </div>
+    </div>
+    ${rec && rec.until > Date.now() ? `<div class="undo"><span>Watered just now.</span><button class="btn-text" type="button" data-act="undo">Undo</button></div>` : ''}
+    <div class="more" id="more-${esc(p.id)}"><div><div class="more-in">
+      <div>
+        <h3>Notes</h3>
+        <p class="notes${p.notes ? '' : ' empty'}">${p.notes ? esc(p.notes) : 'No notes yet.'}</p>
+        <div class="more-actions">
+          <button class="btn btn-ghost" type="button" data-act="edit">Edit</button>
+          ${d <= 0 ? `<button class="btn btn-ghost" type="button" data-act="snooze">Soil’s still damp, ask tomorrow</button>` : ''}
+          <button class="btn btn-ghost" type="button" data-act="ask-delete">Delete</button>
+        </div>
+      </div>
+      <div>
+        <h3>Watering history</h3>
+        <ul class="hist">${hist || '<li><span>Not watered yet</span></li>'}</ul>
+      </div>
+      ${confirmId === p.id ? `<div class="confirm" role="alert"><p>Delete ${esc(p.name)}? Its watering history goes with it.</p><button class="btn btn-ghost" type="button" data-act="keep">Keep it</button><button class="btn btn-danger" type="button" data-act="delete">Delete</button></div>` : ''}
+    </div></div></div>
+  </li>`;
+}
+
+function renderSchedule(){
+  const el = $('schedule');
+  if (!state.plants.length) {
+    el.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 120 160" aria-hidden="true">${drawInner({ id:'empty', kind:'snake', glaze:'celadon' }, 1)}</svg>
+      <div><h2>No plants yet</h2><p>Add a plant with how often it likes water. Sill counts the days and moves it to the top when it’s thirsty.</p>
+      <div class="btns"><button class="btn btn-ink" type="button" data-act="add">Add your first plant</button><button class="btn btn-ghost" type="button" data-act="restore">Bring back the examples</button></div></div>
+    </div>`;
+    return;
+  }
+  const list = state.plants.filter(p => state.room === 'all' || p.room === state.room).sort(byUrgency);
+  if (!list.length) { el.innerHTML = `<p class="none-in-room">No plants in this room.</p>`; return; }
+  const groups = [
+    ['Water today', list.filter(p => daysLeft(p) <= 0)],
+    ['This week', list.filter(p => daysLeft(p) > 0 && daysLeft(p) <= 7)],
+    ['Later', list.filter(p => daysLeft(p) > 7)],
+  ];
+  el.innerHTML = groups.filter(g => g[1].length).map(([title, ps]) =>
+    `<section class="group"><h2>${title}<span class="n">${ps.length}</span></h2><ul class="rows">${ps.map(rowHTML).join('')}</ul></section>`).join('');
+}
+
+function renderCalendar(){
+  const days = [];
+  for (let i = 0; i < 14; i++) days.push({ date: addDays(TODAY, i), ps: [] });
+  for (const p of state.plants) {
+    let d = Math.max(0, daysLeft(p));
+    while (d < 14) { days[d].ps.push(p); d += p.every; }
+  }
+  $('cal').innerHTML = days.map((d, i) => {
+    const shown = d.ps.slice(0, 4);
+    const label = d.ps.length ? `${fmtLong(d.date)}: ${d.ps.map(p => p.name).join(', ')}` : `${fmtLong(d.date)}: nothing to water`;
+    return `<div class="day${i === 0 ? ' is-today' : ''}" role="group" aria-label="${esc(label)}" title="${esc(label)}">
+      <span class="dn">${i === 0 ? 'Today' : d.date.toLocaleDateString('en-GB', { weekday:'short' })}</span>
+      <span class="dd">${d.date.getDate()}</span>
+      <span class="pots">${shown.map(p => `<svg viewBox="0 0 120 160" aria-hidden="true">${drawInner(p, i === 0 ? moisture(p) : 0.35, { lo: true })}</svg>`).join('')}</span>
+      ${d.ps.length > 4 ? `<span class="more-n">+${d.ps.length - 4}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderLog(){
+  const ev = [];
+  for (const p of state.plants) for (const k of p.history) ev.push({ p, k });
+  ev.sort((a, b) => b.k.localeCompare(a.k) || a.p.name.localeCompare(b.p.name));
+  $('log').innerHTML = ev.length ? ev.slice(0, 6).map(({ p, k }) =>
+    `<li><svg viewBox="0 0 120 160" aria-hidden="true">${drawInner(p, 1, { lo: true })}</svg><span>${esc(p.name)}</span><time datetime="${k}">${esc(ago(k))}</time></li>`).join('')
+    : `<li style="grid-template-columns:1fr"><span style="color:var(--muted)">Nothing logged yet.</span></li>`;
+}
+
+function render(){
+  $('today').textContent = fmtLong(TODAY);
+  renderHero(); renderFilters(); renderSchedule(); renderCalendar(); renderLog();
+  firstPaint = false;
+}
+
+/* ---------- actions ---------- */
+const reduce = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const find = id => state.plants.find(p => p.id === id);
+
+function tweenArt(p, from, to, done){
+  if (reduce()) return done();
+  const els = [...document.querySelectorAll(`svg[data-art="${CSS.escape(p.id)}"]`)];
+  // a few drops fall on the sill copy
+  const sill = els.find(e => e.dataset.stake === '1');
+  if (sill) {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.innerHTML = [0, 1, 2].map(i => `<ellipse class="drop" cx="${52 + i * 8}" cy="${58 + (i % 2) * 6}" rx="2.2" ry="3.2" fill="#1F6F8B" style="animation-delay:${i * 90}ms"/>`).join('');
+    sill.parentNode.appendChild(g);
+    g.setAttribute('transform', sill.getAttribute('x') ? `translate(${sill.getAttribute('x')} ${sill.getAttribute('y')}) scale(${130/120})` : '');
+  }
+  const t0 = performance.now(), D = 520;
+  const ease = x => 1 - Math.pow(1 - x, 3);
+  (function frame(now){
+    const k = clamp((now - t0) / D, 0, 1), m = from + (to - from) * ease(k);
+    for (const el of els) el.innerHTML = drawInner(p, m, { lo: el.dataset.lo === '1', withStake: el.dataset.stake === '1' });
+    if (k < 1) requestAnimationFrame(frame); else setTimeout(done, 120);
+  })(t0);
+}
+
+function water(id){
+  const p = find(id); if (!p) return;
+  const from = moisture(p);
+  const prev = p.history.slice(), prevSnooze = p.snoozedTo;
+  if (p.history[0] !== key(TODAY)) p.history.unshift(key(TODAY));
+  delete p.snoozedTo;
+  recent[id] = { prev, prevSnooze, until: Date.now() + 10000, flash: true };
+  save();
+  tweenArt(p, from, 1, () => {
+    render(); focusRow(id, 'water');
+    recent[id].flash = false;
+    setTimeout(() => { if (recent[id] && recent[id].until <= Date.now()) { delete recent[id]; renderSchedule(); } }, 10100);
+  });
+}
+function undo(id){
+  const p = find(id), r = recent[id]; if (!p || !r) return;
+  p.history = r.prev; if (r.prevSnooze) p.snoozedTo = r.prevSnooze;
+  delete recent[id]; save(); render(); focusRow(id, 'water');
+}
+function focusRow(id, act){
+  const el = document.querySelector(`.row[data-id="${CSS.escape(id)}"] [data-act="${act}"]`);
+  if (el) el.focus({ preventScroll: true });
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act], [data-room], [data-slot]');
+  if (!b) return;
+  if (b.dataset.room) { state.room = b.dataset.room; save(); renderFilters(); renderSchedule(); return; }
+  if (b.dataset.slot) { revealRow(b.dataset.slot); return; }
+  const row = b.closest('.row'), id = row && row.dataset.id;
+  switch (b.dataset.act) {
+    case 'water': water(id); break;
+    case 'undo': undo(id); break;
+    case 'toggle': openId = openId === id ? null : id; confirmId = null;
+      row.classList.toggle('open', openId === id); b.setAttribute('aria-expanded', openId === id);
+      document.querySelectorAll('.row.open').forEach(r => { if (r !== row) { r.classList.remove('open'); r.querySelector('.row-name').setAttribute('aria-expanded', 'false'); } });
+      break;
+    case 'snooze': { const p = find(id); p.snoozedTo = key(addDays(TODAY, 1)); save(); render(); break; }
+    case 'ask-delete': confirmId = id; renderSchedule(); focusRow(id, 'keep'); break;
+    case 'keep': confirmId = null; renderSchedule(); focusRow(id, 'ask-delete'); break;
+    case 'delete': state.plants = state.plants.filter(p => p.id !== id); openId = confirmId = null; save(); render(); break;
+    case 'edit': openSheet(find(id)); break;
+    case 'add': openSheet(null); break;
+    case 'clear-examples': state.plants = state.plants.filter(p => !p.example); openId = null; save(); render(); break;
+    case 'restore': state.plants = seedPlants().concat(state.plants); save(); firstPaint = true; render(); break;
+  }
+});
+document.addEventListener('keydown', e => {
+  const s = e.target.closest && e.target.closest('[data-slot]');
+  if (s && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); revealRow(s.dataset.slot); }
+});
+function revealRow(id){
+  const p = find(id);
+  if (p && state.room !== 'all' && p.room !== state.room) { state.room = 'all'; renderFilters(); }
+  openId = id; confirmId = null; renderSchedule();
+  const row = document.querySelector(`.row[data-id="${CSS.escape(id)}"]`);
+  if (row) { row.scrollIntoView({ behavior: reduce() ? 'auto' : 'smooth', block: 'center' }); row.querySelector('.row-name').focus({ preventScroll: true }); row.classList.add('flash'); }
+}
+
+/* ---------- add / edit sheet ---------- */
+const sheet = $('sheet'), form = $('plant-form');
+let editing = null, everyTouched = false;
+$('f-kinds').innerHTML = Object.entries(KINDS).map(([k, v], i) =>
+  `<label class="kind"><input type="radio" name="kind" value="${k}"${i === 0 ? ' checked' : ''}><span><svg viewBox="0 0 120 160" aria-hidden="true">${drawInner({ id: 'pick-' + k, kind: k, glaze: 'clay' }, .8, { lo: true })}</svg>${v.label}</span></label>`).join('');
+$('f-glazes').innerHTML = Object.entries(GLAZES).map(([k, g], i) =>
+  `<label class="glaze" title="${g.label}"><input type="radio" name="glaze" value="${k}"${i === 0 ? ' checked' : ''} aria-label="${g.label}"><span style="background:linear-gradient(100deg,${g.hi},${g.base} 45%,${g.lo})"></span></label>`).join('');
+
+function kindHint(){
+  const k = form.kind.value;
+  $('f-every-hint').textContent = `Most ${KINDS[k].label.toLowerCase()}s: ${KINDS[k].range}.`;
+}
+function repaintKinds(){
+  const g = form.glaze.value;
+  form.querySelectorAll('.kind').forEach(l => { const k = l.querySelector('input').value; l.querySelector('svg').innerHTML = drawInner({ id: 'pick-' + k, kind: k, glaze: g }, .8, { lo: true }); });
+}
+function openSheet(p){
+  editing = p; everyTouched = !!p;
+  $('sheet-title').textContent = p ? `Edit ${p.name}` : 'Add a plant';
+  $('f-submit').textContent = p ? 'Save changes' : 'Add to the sill';
+  form.name.value = p ? p.name : '';
+  form.kind.value = p ? p.kind : 'monstera';
+  form.glaze.value = p ? p.glaze : 'clay';
+  form.every.value = p ? p.every : KINDS[form.kind.value].every;
+  form.room.value = p ? p.room : (state.room !== 'all' ? state.room : '');
+  form.last.value = p ? p.history[0] || key(TODAY) : key(TODAY);
+  form.last.max = key(TODAY);
+  form.notes.value = p ? p.notes || '' : '';
+  $('f-name-err').hidden = true; form.name.removeAttribute('aria-invalid');
+  kindHint(); repaintKinds();
+  sheet.showModal();
+  form.name.focus();
+}
+form.addEventListener('change', e => {
+  if (e.target.name === 'kind') { if (!everyTouched) form.every.value = KINDS[form.kind.value].every; kindHint(); }
+  if (e.target.name === 'glaze') repaintKinds();
+});
+form.every.addEventListener('input', () => { everyTouched = true; });
+form.addEventListener('click', e => {
+  const s = e.target.closest('[data-step]');
+  if (s) { everyTouched = true; form.every.value = clamp((parseInt(form.every.value, 10) || 0) + Number(s.dataset.step), 1, 60); }
+  if (e.target.closest('[data-close]')) sheet.close();
+});
+sheet.addEventListener('click', e => { if (e.target === sheet) sheet.close(); });
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  const name = form.name.value.trim();
+  if (!name) { $('f-name-err').hidden = false; form.name.setAttribute('aria-invalid', 'true'); form.name.focus(); return; }
+  const every = clamp(parseInt(form.every.value, 10) || KINDS[form.kind.value].every, 1, 60);
+  let last = form.last.value && parse(form.last.value) <= TODAY ? form.last.value : key(TODAY);
+  const data = { name, kind: form.kind.value, glaze: form.glaze.value, every, room: form.room.value.trim(), notes: form.notes.value.trim() };
+  let id;
+  if (editing) {
+    Object.assign(editing, data);
+    if (editing.history[0] !== last) { editing.history = [last, ...editing.history.filter(k => k < last)]; delete editing.snoozedTo; }
+    id = editing.id;
+  } else {
+    id = 'p' + Date.now().toString(36);
+    state.plants.push({ id, ...data, history: [last] });
+  }
+  save(); sheet.close(); openId = null; render();
+  revealRow(id);
+});
+$('add-btn').addEventListener('click', () => openSheet(null));
+
+render();
+})();
+</script>
+</body>
+</html>

@@ -9,6 +9,11 @@
 4. **Motion that shows change.** One orchestrated moment (a first-load sequence or a hero loop), plus state motion where the graphic reacts: the water rises, the leaf perks up, the ticket slides to "done". Spring or 300–500ms eased, and instant under `prefers-reduced-motion`.
 5. **Material and light.** Surfaces come from the subject's materials (glazed ceramic, kraft paper, frosted acrylic, brushed metal): tone steps, a consistent light direction, a subtle grain or highlight. There's one light source across the SVG, the 3D and the CSS shadows.
 
+**Guardrails (from blind judging):**
+- **The visual never costs the task.** On a 390px screen, the key line, the signature visual and the first actionable item all fit in the first screen. Make a compact phone version of the visual (the 3 most urgent objects, ≤ 35% of the screen height, no sideways-scrolling hero). `shoot.mjs` flags `TASK BELOW FOLD`.
+- **Every encoding reads without a legend, or it carries a label.** A bar or fill needs its meaning in words nearby ("water left", "3 of 7 days"), and colour and length must not contradict each other.
+- **The display face is for the key line, numbers and object names.** Section headings and controls use the text face. Heavy display type on every heading reads as loud.
+
 ## Choosing the signature medium
 | Medium | Best for | Cost and rules |
 |---|---|---|

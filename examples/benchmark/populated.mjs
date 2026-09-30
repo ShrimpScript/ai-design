@@ -6,7 +6,7 @@ import { launch } from '../../skills/design-recon/scripts/lib/pw.mjs';
 import { serve } from '../../skills/design-recon/scripts/lib/serve.mjs';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const b = await launch();
-for (const run of ['A', 'B']) {
+for (const run of (process.env.RUNS || 'A,B').split(',')) {
   const s = await serve(path.join(here, run, 'out', 'index.html'));
   for (const [w, h, tag] of [[1440, 900, 'desktop'], [390, 844, 'mobile']]) {
     const ctx = await b.newContext({ viewport: { width: w, height: h }, isMobile: w < 600 });
