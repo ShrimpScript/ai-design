@@ -33,13 +33,15 @@ for (const run of (process.env.RUNS || 'A,B').split(',')) {
   // Generic functional probe: fill visible inputs, press the add/submit control, look for the new item, reload.
   // Generic functional probe (two-step aware): open the add flow if needed, fill every visible field,
   // submit, then look for the new plant; afterwards reload to test persistence.
-  r.functional = await p.evaluate(async () => {
+  r.functional = await p.evaluate(async (ORDER) => {
     const wait = (ms) => new Promise(r => setTimeout(r, ms));
     const vis = (e) => { const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0 && getComputedStyle(e).visibility !== 'hidden'; };
     const fill = (root) => { let n = 0; for (const i of [...root.querySelectorAll('input, select, textarea')].filter(vis)) {
       const t = (i.type || '').toLowerCase();
       if (i.tagName === 'SELECT') { if (i.options.length > 1) i.selectedIndex = 1; }
       else if (t === 'number' || t === 'range') i.value = (i.min && +i.min > 7) ? i.min : '7';
+      else if (t === 'email') i.value = 'sam.porter@example.org';
+      else if (t === 'tel') i.value = '07700 900123';
       else if (t === 'date') i.value = new Date().toISOString().slice(0, 10);
       else if (['text', 'search', ''].includes(t) || i.tagName === 'TEXTAREA') i.value = 'Zebra Calathea';
       else if (t === 'radio' || t === 'checkbox') { if (!i.checked) i.click(); continue; }
@@ -50,14 +52,17 @@ for (const run of (process.env.RUNS || 'A,B').split(',')) {
     const steps = [];
     // Same rule for every app: if no submit control is visible yet, open the add flow first.
     const visibleSubmit = () => [...document.querySelectorAll('button[type=submit], input[type=submit], form button:not([type=button])')].find(vis);
-    if (!visibleSubmit()) { const open = find(document, /add|new|plant/i); if (open) { open.click(); steps.push('opened: ' + label(open).slice(0, 24)); await wait(500); } }
+    if (!visibleSubmit()) { const open = find(document, ORDER ? /pre-?order|order|reserve|book/i : /add|new|plant/i); if (open) { open.click(); steps.push('opened: ' + label(open).slice(0, 24)); await wait(500); } }
     const scope = [...document.querySelectorAll('dialog[open], [role=dialog], form')].find(vis) || document;
     const filled = fill(scope);
-    const submit = [...scope.querySelectorAll('button[type=submit], input[type=submit]')].find(vis) || find(scope, /add|save|create|plant|done/i);
+    const before = document.body.innerText;
+    const submit = [...scope.querySelectorAll('button[type=submit], input[type=submit]')].find(vis) || find(scope, /add|save|create|plant|done|order|reserve|place|confirm/i);
     if (!submit) return { steps, filled, added: false, note: 'no submit control' };
     submit.click(); steps.push('submitted: ' + label(submit).slice(0, 24)); await wait(700);
+    if (ORDER) { const after = document.body.innerText; const inv = [...document.querySelectorAll(':invalid')].filter(vis).map(e => e.name || e.id || e.type).slice(0, 5);
+      return { steps, filled, invalidFields: inv, confirmed: after !== before && /thank|confirmed|reserved|see you|got it|we'll have|order (is|has been|number)|pick ?up/i.test(after.replace(before, '')) }; }
     return { steps, filled, added: document.body.innerText.includes('Zebra Calathea') };
-  });
+  }, !!process.env.ORDER);
   if (r.functional.added) { await p.reload({ waitUntil: 'networkidle' }); await p.waitForTimeout(500); r.functional.persists = await p.evaluate(() => document.body.innerText.includes('Zebra Calathea')); }
   r.consoleErrors = errs;
   await ctx.close();
@@ -69,5 +74,6 @@ for (const run of (process.env.RUNS || 'A,B').split(',')) {
   await m.close(); srv.close();
 }
 await browser.close();
-writeFileSync(path.join(here, 'eval.json'), JSON.stringify(results, null, 1));
+const out = path.join(here, process.env.OUT || 'eval.json'); let prev = {}; try { prev = JSON.parse(readFileSync(out, 'utf8')); } catch {}
+writeFileSync(out, JSON.stringify({ ...prev, ...results }, null, 1));
 console.log(JSON.stringify(results, null, 1));
