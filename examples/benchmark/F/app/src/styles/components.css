@@ -237,6 +237,7 @@
 }
 .mobile-menu {
   position: fixed;
+  z-index: 49;
   inset: var(--header-h) 0 0 0;
   background: var(--paper);
   padding: var(--s-5) var(--gutter) var(--s-7);

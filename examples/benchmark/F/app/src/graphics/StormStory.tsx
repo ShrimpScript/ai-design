@@ -10,7 +10,6 @@ export type StoryStep = { hour: number; title: string; body: string };
 type Props = { steps: StoryStep[]; heading: string; intro: string };
 
 export default function StormStory({ steps, heading, intro }: Props) {
-  const trackRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLOListElement>(null);
   const n = steps.length;
   const t = useStepProgress(listRef);
@@ -30,7 +29,7 @@ export default function StormStory({ steps, heading, intro }: Props) {
         <h2 id="story-title">{heading}</h2>
         <p className="lede">{intro}</p>
       </div>
-      <div className="wrap story__track" ref={trackRef}>
+      <div className="wrap story__track">
         <div className="story__viz" aria-hidden="true">
           <div className="story__viz-inner">
             <div className="story__map">

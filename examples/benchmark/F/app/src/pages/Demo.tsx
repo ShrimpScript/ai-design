@@ -125,7 +125,6 @@ export default function Demo() {
 
   useEffect(() => {
     if (status === 'error') errorRef.current?.focus();
-    if (status === 'done') doneRef.current?.focus();
   }, [status]);
 
   const onSubmit = async (e: FormEvent) => {
@@ -180,7 +179,14 @@ export default function Demo() {
             <m.div
               key="done"
               className="demo__done"
-              ref={doneRef}
+              ref={(el: HTMLDivElement | null) => {
+                if (el && doneRef.current !== el) {
+                  doneRef.current = el;
+                  el.focus({ preventScroll: true });
+                  const top = el.getBoundingClientRect().top + window.scrollY - 100;
+                  if (el.getBoundingClientRect().top < 80) window.scrollTo({ top, behavior: 'auto' });
+                }
+              }}
               tabIndex={-1}
               role="status"
               initial={{ opacity: 0, y: 12 }}

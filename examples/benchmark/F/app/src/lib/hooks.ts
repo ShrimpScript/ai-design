@@ -33,39 +33,6 @@ export function useInView<T extends Element>(ref: RefObject<T | null>, rootMargi
   return inView;
 }
 
-/**
- * Progress (0..1) of a tall section scrolling past a sticky viewport.
- * 0 when the section top reaches the top of the viewport, 1 when its bottom reaches the bottom.
- */
-export function useScrollProgress<T extends HTMLElement>(ref: RefObject<T | null>) {
-  const [p, setP] = useState(0);
-  const frame = useRef(0);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const measure = () => {
-      frame.current = 0;
-      const r = el.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const total = r.height - vh;
-      const v = total <= 0 ? 0 : Math.min(1, Math.max(0, -r.top / total));
-      setP((prev) => (Math.abs(prev - v) > 0.0005 ? v : prev));
-    };
-    const onScroll = () => {
-      if (!frame.current) frame.current = requestAnimationFrame(measure);
-    };
-    measure();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-      if (frame.current) cancelAnimationFrame(frame.current);
-    };
-  }, [ref]);
-  return p;
-}
-
 export function useDocumentTitle(title: string) {
   useEffect(() => {
     document.title = title === 'Tidemark' ? 'Tidemark: street-level flood forecasts, 72 hours ahead' : `${title} | Tidemark`;

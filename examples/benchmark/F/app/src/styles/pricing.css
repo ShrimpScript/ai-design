@@ -1,7 +1,7 @@
 .plans-head {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: var(--s-5);
+  margin-bottom: var(--s-7);
 }
 .seg--small .seg__opt span {
   min-height: 34px;
@@ -98,8 +98,8 @@
   }
   .plan--featured .plan__note {
     position: absolute;
-    top: 14px;
-    right: 0;
+    top: -34px;
+    left: 0;
     margin: 0;
   }
 }

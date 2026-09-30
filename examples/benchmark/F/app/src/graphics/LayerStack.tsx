@@ -172,7 +172,6 @@ const CX = 330;
 const ISO = (y: number) => `translate(${CX} ${y}) matrix(0.866 0.5 -0.866 0.5 0 0)`;
 
 export default function LayerStack({ steps }: Props) {
-  const trackRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLOListElement>(null);
   const n = steps.length;
   const t = useStepProgress(listRef);
@@ -189,7 +188,7 @@ export default function LayerStack({ steps }: Props) {
   );
 
   // 5 input layers; the last step fuses them
-  const fuse = Math.max(0, Math.min(1, t - (n - 2)));
+  const fuse = Math.max(0, Math.min(1, (t - (n - 2) - 0.35) / 0.55));
   const spread = Math.max(0, Math.min(1, t));
   const gap = 64 + 40 * spread - 88 * fuse;
   const top = 88;
@@ -205,7 +204,7 @@ export default function LayerStack({ steps }: Props) {
   );
 
   return (
-    <div className="ls-track" ref={trackRef}>
+    <div className="ls-track">
       <div className="ls-viz" aria-hidden="true">
         <svg viewBox="0 0 800 820" className="ls-svg" preserveAspectRatio="xMidYMid meet">
           <defs>

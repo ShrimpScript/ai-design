@@ -43,7 +43,7 @@ export default function SkillChart() {
               <circle key={i} cx={x(LEADS[i])} cy={y(v)} r={4} className="skill__dot" style={{ transitionDelay: `${0.15 * i}s` }} />
             ))}
             <text x={x(narrow ? 30 : 40)} y={y(TIDEMARK[narrow ? 3 : 4]) - 14} className="skill__lab skill__lab--tm">Tidemark</text>
-            <text x={x(narrow ? 30 : 40)} y={y(THRESHOLD[narrow ? 3 : 4]) + (narrow ? 26 : 24)} className="skill__lab skill__lab--base">
+            <text x={x(narrow ? 36 : 48)} y={y(THRESHOLD[narrow ? 3 : 4]) + 22} textAnchor="middle" className="skill__lab skill__lab--base">
               Rain-threshold warnings
             </text>
             <text x={x(72)} y={y(79) - 12} textAnchor="end" className="skill__val">79%</text>
