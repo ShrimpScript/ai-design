@@ -1,0 +1,179 @@
+.ls-track {
+  --ls-ground: #ffffff;
+  --ls-glass: rgba(255, 255, 255, 0.5);
+  --ls-edge: rgba(15, 36, 54, 0.38);
+  --ls-water: #bfd6e0;
+  --ls-water-strong: #8ec3d8;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.ls-viz {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 2;
+  align-self: start;
+  height: calc(52svh - 8px);
+  background: var(--paper-sunk);
+  display: grid;
+  place-items: center;
+  padding-block: 8px;
+}
+.ls-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.ls-layer {
+  opacity: 0.4;
+  transition: opacity var(--dur-3) var(--ease-out);
+}
+.ls-layer.is-active,
+.ls-layer.is-fused {
+  opacity: 1;
+}
+.ls-layer.is-active > rect {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.ls-contour {
+  fill: none;
+  stroke: #7b8f8a;
+  stroke-width: 0.6;
+}
+.ls-contour.is-index {
+  stroke: #4d6373;
+  stroke-width: 1;
+}
+.ls-pipe {
+  fill: none;
+  stroke: var(--depth-4);
+  stroke-width: 0.8;
+}
+.ls-pipe.is-major {
+  stroke-width: 2.2;
+}
+.ls-street {
+  fill: none;
+  stroke: #d9e0dd;
+  stroke-width: 1.6;
+}
+.ls-gauge {
+  fill: var(--ink);
+  stroke: #fff;
+  stroke-width: 2;
+}
+.ls-label line {
+  stroke: var(--ink-3);
+}
+.ls-label text {
+  fill: var(--ink-3);
+  font-size: 17px;
+  font-weight: 560;
+}
+.ls-label.is-active text {
+  fill: var(--ink);
+  font-weight: 700;
+}
+.ls-label.is-active line {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.ls-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+}
+.ls-step {
+  min-height: 70svh;
+  padding: var(--s-6) 0 var(--s-7);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--s-4);
+  row-gap: var(--s-3);
+  align-content: start;
+  max-width: 50ch;
+  opacity: 0.4;
+  transition: opacity var(--dur-3) var(--ease-out);
+}
+.ls-step > *:not(.ls-step__n) {
+  grid-column: 2;
+}
+.ls-step.is-active {
+  opacity: 1;
+}
+.ls-step__n {
+  grid-row: 1 / span 3;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.ls-step.is-active .ls-step__n {
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 0 0 3px var(--signal);
+}
+.ls-step h3 {
+  font-size: var(--t-xl);
+  font-stretch: 76%;
+  font-weight: 700;
+  line-height: 1.05;
+  padding-top: 2px;
+}
+.ls-step p {
+  color: var(--ink-2);
+}
+.ls-step__source {
+  font-size: var(--t-sm);
+  padding-left: 12px;
+  border-left: 2px solid var(--rule-strong);
+}
+@media (min-width: 640px) {
+  .ls-viz {
+    height: calc(60svh - 8px);
+  }
+}
+@media (min-width: 960px) {
+  .ls-track {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: var(--s-8);
+  }
+  .ls-viz {
+    grid-column: 2;
+    grid-row: 1;
+    top: calc(var(--header-h) + 16px);
+    height: calc(100vh - var(--header-h) - 32px);
+    max-height: 860px;
+    background: transparent;
+  }
+  .ls-steps {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .ls-step {
+    min-height: 86vh;
+    align-content: center;
+    padding: 0;
+  }
+  .ls-step:first-child {
+    min-height: 70vh;
+    align-content: start;
+    padding-top: var(--s-5);
+  }
+  .ls-step:last-child {
+    min-height: 90vh;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ls-layer,
+  .ls-step {
+    transition: none;
+  }
+}

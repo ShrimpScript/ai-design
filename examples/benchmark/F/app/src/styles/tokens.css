@@ -1,0 +1,112 @@
+/*
+  Tidemark design tokens
+  Palette is drawn from hydrographic charts and flood gauge boards:
+  chart white paper, harbour-ink navy, a five-step depth ramp,
+  hi-vis gauge yellow for thresholds, and a single alarm red.
+*/
+:root {
+  /* Base palette */
+  --paper: #f2f5f6;
+  --paper-sunk: #e6ecee;
+  --paper-raised: #ffffff;
+  --ink: #0f2436;
+  --ink-2: #3d5466;
+  --ink-3: #5f7483;
+  --rule: rgba(15, 36, 54, 0.14);
+  --rule-strong: rgba(15, 36, 54, 0.32);
+
+  /* Dark "night shift" surfaces */
+  --harbour: #0f2436;
+  --harbour-2: #16324a;
+  --harbour-rule: rgba(214, 229, 237, 0.16);
+  --on-harbour: #e8f0f3;
+  --on-harbour-2: #a7bccb;
+
+  /* Depth ramp: 5 cm to 1 m+ */
+  --depth-1: #cfe6ee;
+  --depth-2: #8ec3d8;
+  --depth-3: #4a95bd;
+  --depth-4: #1f679a;
+  --depth-5: #0e3c69;
+
+  /* Signals */
+  --signal: #f5c518; /* gauge yellow: thresholds, the tidemark line */
+  --signal-ink: #6b5200; /* yellow-derived text colour that passes AA on paper */
+  --alert: #c9362c; /* over threshold */
+  --ok: #2f7a55;
+
+  /* Map */
+  --map-street: #ffffff;
+  --map-block: #dde3e0;
+  --map-park: #d2dfd0;
+  --map-sea: #bfd6e0;
+
+  /* Type */
+  --font: 'Archivo Variable', 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Scale follows the classic typographic scale (Bringhurst): 14 16 18 21 24 36 48 60 72 */
+  --t-xs: 0.8125rem; /* 13 */
+  --t-sm: 0.875rem; /* 14 */
+  --t-base: 1.0625rem; /* 17 on phones */
+  --t-md: 1.3125rem; /* 21 */
+  --t-lg: 1.5rem; /* 24 */
+  --t-xl: clamp(1.875rem, 1.3rem + 2.2vw, 2.25rem); /* 30 -> 36 */
+  --t-2xl: clamp(2.25rem, 1.4rem + 3.4vw, 3rem); /* 36 -> 48 */
+  --t-3xl: clamp(2.5rem, 1.2rem + 5.2vw, 4.5rem); /* 40 -> 72 */
+
+  --display-stretch: 76%;
+  --lh-tight: 1;
+  --lh-snug: 1.15;
+  --lh-body: 1.55;
+
+  /* Space (8pt with a 4 half-step) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+  --s-10: 128px;
+
+  --gutter: 16px;
+  --max: 1320px;
+  --measure: 62ch;
+
+  /* Shape: controls are slightly softened, surfaces stay square like chart sheets */
+  --r-control: 4px;
+  --r-chip: 999px;
+  --r-panel: 2px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-1: 120ms;
+  --dur-2: 220ms;
+  --dur-3: 420ms;
+
+  --header-h: 64px;
+  --focus: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink), 0 0 0 7px var(--signal);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --gutter: 24px;
+    --t-base: 1.125rem; /* 18 */
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 40px;
+    --header-h: 72px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-1: 0ms;
+    --dur-2: 0ms;
+    --dur-3: 0ms;
+  }
+}

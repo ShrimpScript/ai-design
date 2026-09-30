@@ -1,0 +1,74 @@
+.skill {
+  margin: 0;
+  display: grid;
+  gap: var(--s-4);
+}
+.skill__plot svg {
+  overflow: visible;
+}
+.skill__grid line {
+  stroke: var(--rule);
+}
+.skill__grid text,
+.skill__x {
+  fill: var(--ink-3);
+  font-size: 12px;
+}
+.skill__line {
+  fill: none;
+  stroke-width: 3;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1.4s var(--ease-out);
+}
+.skill__line--tm {
+  stroke: var(--depth-4);
+}
+.skill__line--base {
+  stroke: var(--ink-3);
+  stroke-width: 2;
+  transition-delay: 0.3s;
+}
+.skill.is-in .skill__line {
+  stroke-dashoffset: 0;
+}
+.skill__dot {
+  fill: var(--paper);
+  stroke: var(--depth-4);
+  stroke-width: 2.5;
+  opacity: 0;
+  transition: opacity 0.3s linear;
+}
+.skill.is-in .skill__dot {
+  opacity: 1;
+}
+.skill__lab {
+  font-size: 14px;
+  font-weight: 650;
+}
+.skill__lab--tm {
+  fill: var(--depth-4);
+}
+.skill__lab--base {
+  fill: var(--ink-3);
+}
+.skill__val {
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.skill figcaption {
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skill__line {
+    transition: none;
+    stroke-dashoffset: 0;
+  }
+  .skill__dot {
+    transition: none;
+    opacity: 1;
+  }
+}

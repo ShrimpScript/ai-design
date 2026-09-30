@@ -1,0 +1,82 @@
+.stormchart {
+  width: 100%;
+  --sc-text: var(--ink-3);
+  --sc-grid: var(--rule);
+  --sc-rain: var(--depth-2);
+  --sc-sea: var(--depth-4);
+  --sc-river: var(--ink);
+  --sc-cursor: var(--ink);
+  font-size: 12px;
+}
+.stormchart--dark {
+  --sc-text: var(--on-harbour-2);
+  --sc-grid: var(--harbour-rule);
+  --sc-rain: #2d5f86;
+  --sc-sea: var(--depth-2);
+  --sc-river: var(--on-harbour);
+  --sc-cursor: var(--signal);
+}
+.stormchart svg {
+  display: block;
+  overflow: visible;
+}
+.sc-grid line {
+  stroke: var(--sc-grid);
+}
+.sc-grid text,
+.sc-day text {
+  fill: var(--sc-text);
+  font-size: 11px;
+}
+.sc-day line {
+  stroke: var(--sc-grid);
+  stroke-dasharray: 2 3;
+}
+.sc-rain rect {
+  fill: var(--sc-rain);
+}
+.sc-sea {
+  fill: none;
+  stroke: var(--sc-sea);
+  stroke-width: 2;
+}
+.sc-river {
+  fill: none;
+  stroke: var(--sc-river);
+  stroke-width: 2;
+  stroke-dasharray: 5 3;
+}
+.sc-labels text {
+  font-size: 12px;
+  font-weight: 600;
+}
+.sc-sea-label {
+  fill: var(--sc-sea);
+}
+.sc-river-label {
+  fill: var(--sc-river);
+}
+.sc-rain-label {
+  fill: var(--sc-text);
+}
+.sc-cursor line {
+  stroke: var(--sc-cursor);
+  stroke-width: 2;
+}
+.sc-dot-sea {
+  fill: var(--sc-sea);
+  stroke: var(--harbour);
+  stroke-width: 2;
+}
+.sc-dot-river {
+  fill: var(--sc-river);
+  stroke: var(--harbour);
+  stroke-width: 2;
+}
+.stormchart:not(.stormchart--dark) .sc-dot-sea,
+.stormchart:not(.stormchart--dark) .sc-dot-river {
+  stroke: var(--paper);
+}
+.stormchart--compact .sc-day text {
+  font-size: 11px;
+}
