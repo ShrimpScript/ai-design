@@ -9,9 +9,11 @@ Read only the section for this brief.
 - **Numbers live in context.** Put the labour cost in the day's column header, not in a "Total Cost" card with an icon and a "+12%" pill.
 - **Colour is semantic first.** Neutral surfaces, one brand accent for primary action and selection, and status colours reserved for status. Distinguish categories by position or label as well as hue (colour-blind safe).
 - **Elevation:** use borders or tone steps for structure. Save shadows for things that float (menus, dialogs, drag ghosts).
+- **First load shows the product working:** labelled example data ("Example plants — clear"), never an empty screen that explains what the app would do.
 - **States are the design.** Empty (it teaches the first action), loading (skeleton matching the final layout), error (what happened and the fix), partial, no-permission, long names, 0 / 1 / 1,000 items.
 - **Keyboard:** visible focus, a logical tab order, Esc closes, Enter confirms, and shortcuts for power actions.
 - **Motion** is 100–200ms and functional: it shows where something went or what changed. No entrance choreography.
+- **Distinctive even when utilitarian:** a blind A/B showed that a usable but plain app loses to a characterful one on first impression. Put at least one **subject-derived visual device** on the main screen (water level shown as a pot's fill, a plant tag shape, the ticket from a kitchen rail), and take the accent from the subject, not the framework blue (`palette.mjs` flags `default-blue`).
 - **Where brand shows:** the type choice, the one accent, iconography style, empty-state illustrations or copy, the logo mark, and the loading moment.
 - **Recon targets:** the product's public screens (docs screenshots, changelog, templates gallery, help centre), pricing and signup flows, and public design systems (Primer, Polaris, Carbon, Atlassian, Radix, GOV.UK) for component anatomy.
 - **Slop to avoid in apps:** "Welcome back, Name 👋"; four identical stat cards; sidebar icons in coloured tiles; gradient area charts; avatar stacks; everything in cards; charts nobody asked for.

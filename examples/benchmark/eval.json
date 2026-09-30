@@ -1,0 +1,59 @@
+{
+ "A": {
+  "bytes": 45968,
+  "loadMs": 1167,
+  "axe": {
+   "critical": 0,
+   "serious": 0,
+   "moderate": 1,
+   "minor": 0
+  },
+  "axeRules": [
+   "page-has-heading-one(m×1)"
+  ],
+  "hosts": [
+   "fonts.googleapis.com",
+   "fonts.gstatic.com"
+  ],
+  "functional": {
+   "steps": [
+    "opened: Add plant",
+    "submitted: Add plant"
+   ],
+   "filled": 6,
+   "added": true,
+   "persists": true
+  },
+  "consoleErrors": [],
+  "mobileOverflowPx": 0
+ },
+ "B": {
+  "bytes": 27566,
+  "loadMs": 1011,
+  "axe": {
+   "critical": 0,
+   "serious": 8,
+   "moderate": 1,
+   "minor": 0
+  },
+  "axeRules": [
+   "color-contrast(s×8)",
+   "landmark-one-main(m×1)"
+  ],
+  "hosts": [
+   "fonts.googleapis.com",
+   "fonts.gstatic.com"
+  ],
+  "functional": {
+   "steps": [
+    "opened: Add plant",
+    "submitted: Add plant"
+   ],
+   "filled": 5,
+   "added": true,
+   "persists": true
+  },
+  "consoleErrors": [],
+  "mobileOverflowPx": 0
+ }
+}

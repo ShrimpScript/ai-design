@@ -41,10 +41,16 @@ export function auditPalette(colours) {
   const pastel = accents.filter(x => x.L > 0.8 && x.C > 0.05 && x.C < 0.13);
   if (pastel.length >= 4 && new Set(pastel.map(x => Math.round(x.H / 60))).size >= 4) add(2, 'pastel-rainbow', `${pastel.length} pastel accents across the wheel — reads as a template kit. Pick one hue family.`);
 
+  // Framework-default accents: the blue every template ships with reads as "no decision was made".
+  const DEFAULT_BLUES = ['#2563EB', '#3B82F6', '#1D4ED8', '#0D6EFD', '#1976D2', '#007AFF', '#0A84FF', '#1E88E5', '#2E6BD6', '#4F46E5', '#2B6CB0', '#3182CE', '#228BE6', '#1677FF', '#0070F3'];  // Tailwind, Bootstrap, Material, iOS, Chakra, Mantine, Ant, Vercel
+  for (const x of accents) { const hit = DEFAULT_BLUES.find(h => dE(x, oklch(h)) < 0.045); if (hit) add(2, 'default-blue', `${x.name || x.hex} ${x.hex} is a framework-default blue (≈ ${hit}). Derive the accent from the subject, or record why in the brief.`); }
+
   // Awkward combinations
   for (const x of accents) if (x.C > 0.025 && x.C < 0.075 && x.L > 0.38 && x.L < 0.68) add(2, 'muddy', `${x.name || x.hex} ${x.hex} is muddy (low chroma mid-tone): push chroma up or move it into the neutrals.`);
+  const seenPair = new Set();
   for (let i = 0; i < vivid.length; i++) for (let j = i + 1; j < vivid.length; j++) {
-    const a = vivid[i], b = vivid[j];
+    const a = vivid[i], b = vivid[j], key = [a.hex, b.hex].sort().join();
+    if (a.hex === b.hex || seenPair.has(key)) continue; seenPair.add(key);   // same colour under two token names
     if (a.C > 0.12 && b.C > 0.12 && hueDiff(a.H, b.H) > 140 && Math.abs(a.L - b.L) < 0.1) add(2, 'vibrating', `${a.hex} and ${b.hex}: saturated complements at equal lightness vibrate when adjacent. Separate them in lightness (ΔL ≥ 0.25).`);
     if (a.C > 0.2 && b.C > 0.2 && a.L > 0.7 && b.L > 0.7) add(2, 'neon-pair', `${a.hex} + ${b.hex}: two neons compete. Keep one.`);
   }

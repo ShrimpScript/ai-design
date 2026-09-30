@@ -13,7 +13,7 @@ Generated UI looks generic because it comes from the average of the training dat
 | `.design/brief.md` exists, small change | **Build**: read the brief → build → verify (step 5). No recon. |
 | brief exists, new surface | **Surface**: recon only if this surface type has no references yet → 4 → 5 |
 | no brief, clear request | **Full**: 1 → 6 |
-| "quick", no human available, or a deliberately vague prompt ("a modern AI SaaS site") | **Quick**: infer every answer, state the assumptions in one line in the brief, 2–3 references, skip checkpoint A |
+| "quick", no human available, or a deliberately vague prompt ("a modern AI SaaS site") | **Quick**: infer every answer, state the assumptions in one line in the brief, **2 references, no board**, skip checkpoint A, and a second shoot round only for real defects |
 
 Split the request first: what the brief, the code or this skill already covers (apply it, mention it in one line) versus what is new (where the effort goes). Don't re-verify decisions the user already made.
 
@@ -32,14 +32,14 @@ Tokens (colours by role, 1–2 families + scale, spacing, radius ladder, elevati
 | Need | Reference | Tool |
 |---|---|---|
 | Context rules (SaaS, brand, ads, personal) | `contexts.md` | — |
-| Type (house default: round, open, regular width, ≥ 400) | `fonts.md` | `specimen.mjs`, `fetch-font.mjs` |
+| Type (prefer round, open, regular width, ≥ 400; **rotate faces**, never the previous project's, specimen ≥ 3) | `fonts.md` | `specimen.mjs`, `fetch-font.mjs` |
 | Brand system, logo, advanced typography | `brand.md` | `brandboard.mjs` → board, OG, favicon, tokens |
 | Colour sanity | `slop.md` § Awkward | `palette.mjs` |
 | Hero, scroll, page transitions, state motion, diagrams | `patterns.md` | `motion.mjs` (measure exemplars, runs in the background) |
 | 3D object | `3d.md` | `inspect3d.mjs` |
 
 ## 5. Build, then verify (every mode)
-Real content (no lorem, fake metrics, stock avatars, "acme"). Tokens first, then components, and every state (empty, loading, error, long text, mobile). Then:
+Real content (no lorem, fake metrics, stock avatars, "acme"). **Apps open in a realistic working state:** seed clearly labelled example data by default (with a way to clear it), not behind a "try examples" button. The empty state is a state you design, not the first impression. Tokens first, then components, and every state (empty, loading, error, long text, mobile). Then:
 ```
 node scripts/slop-lint.mjs src/                        # HIGH must be fixed
 node scripts/palette.mjs src/styles.css                 # awkward / AI colour combinations
