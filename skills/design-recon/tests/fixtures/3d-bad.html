@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><canvas id="c" width="480" height="480"></canvas>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"}}</script>
+<script type="module">
+// Fixture (bad): a tag on a ring. good = threaded & hanging; bad = floating in front of the ring, hole turned sideways.
+import * as THREE from 'three';
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true });
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xffffff); scene.add(new THREE.HemisphereLight(0xffffff, 0x888888, 3));
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 50); camera.position.set(0, 0, 8); camera.lookAt(0, -0.5, 0);
+const R = 1, ring = new THREE.Mesh(new THREE.TorusGeometry(R, 0.06, 16, 96), new THREE.MeshStandardMaterial({ color: 0x999999 }));
+ring.userData = { part: 'ring', centerline: Array.from({ length: 96 }, (_, i) => [R * Math.cos(i / 96 * Math.PI * 2), R * Math.sin(i / 96 * Math.PI * 2), 0]) };
+scene.add(ring);
+const s = new THREE.Shape(); s.moveTo(-0.5, -1.4); s.lineTo(0.5, -1.4); s.lineTo(0.5, 0.35); s.lineTo(-0.5, 0.35); s.lineTo(-0.5, -1.4);
+const h = new THREE.Path(); h.absarc(0, 0, 0.22, 0, Math.PI * 2, true); s.holes.push(h);
+const tag = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: 0.2, bevelEnabled: false }).translate(0, 0, -0.1), new THREE.MeshStandardMaterial({ color: 0x223322 }));
+tag.userData = { part: 'tag', threads: { on: 'ring', hole: [0, 0, 0], axis: [0, 0, 1], clearance: 0.22 } };
+const f = new THREE.Group(); f.position.set(0, -R, 0.6);
+if ('N' === 'T') f.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(0, 0, -1), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 0, 0)));
+f.add(tag); scene.add(f);
+renderer.render(scene, camera);
+window.__inspect3d = { THREE, scene, camera, renderer, root: scene, pause() {} };
+</script>

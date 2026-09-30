@@ -5,32 +5,19 @@
 //                  [--click "text"]   (click an element first, e.g. to open a drawer, then shoot)
 //
 // Writes <out>/<label>/sheet.jpg (look at this), <w>.jpg per width, report.md (printed too).
-import { mkdirSync, writeFileSync, existsSync, readFileSync, statSync } from 'node:fs';
-import http from 'node:http';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { launch, newPage, shotCapped } from './lib/pw.mjs';
 import { contactSheet } from './lib/sheet.mjs';
+import { serve } from './lib/serve.mjs';
 import { fontTier, isRound } from './lib/fonts.mjs';
 
 const argv = process.argv.slice(2);
 const opt = (n, d) => { const i = argv.indexOf(n); return i < 0 ? d : argv[i + 1]; };
 const target = argv.find((a, i) => !a.startsWith('--') && !/^--(out|widths|label|click|frames)$/.test(argv[i - 1] || ''));
 if (!target) { console.error('usage: shoot.mjs <url|file> [--widths 390,768,1440] [--label name] [--dark] [--click text]'); process.exit(1); }
-// Local files are served over http (file:// breaks fonts, CORS, modules), like production.
-let url = target, server;
-if (!/^https?:/.test(target)) {
-  const file = path.resolve(target.replace(/^file:\/\//, '')), root = statSync(file).isDirectory() ? file : path.dirname(file);
-  const types = { html: 'text/html', css: 'text/css', js: 'text/javascript', mjs: 'text/javascript', json: 'application/json', svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp', woff2: 'font/woff2', woff: 'font/woff', ico: 'image/x-icon' };
-  server = http.createServer((req, res) => {
-    let p = path.join(root, decodeURIComponent(req.url.split('?')[0]));
-    if (!p.startsWith(root)) { res.writeHead(403); return res.end(); }
-    if (existsSync(p) && statSync(p).isDirectory()) p = path.join(p, 'index.html');
-    if (!existsSync(p)) { res.writeHead(404); return res.end(); }
-    res.writeHead(200, { 'content-type': types[p.split('.').pop()] || 'application/octet-stream' }); res.end(readFileSync(p));
-  });
-  await new Promise(r => server.listen(0, '127.0.0.1', r));
-  url = `http://127.0.0.1:${server.address().port}/${statSync(file).isDirectory() ? '' : path.basename(file)}`;
-}
+const served = await serve(target);
+const url = served.url;
 const widths = String(opt('--widths', '390,768,1440')).split(',').map(Number);
 const label = opt('--label', new Date().toISOString().slice(11, 19).replace(/:/g, ''));
 const dir = path.join(opt('--out', '.design/shots'), label);
@@ -159,7 +146,7 @@ for (const w of widths) {
 }
 await contactSheet(browser, sheet, path.join(dir, 'sheet.jpg'), { cols: Math.min(sheet.length, 4), width: 2000, title: `${target} — ${label}`, maxImgH: 2600 });
 await browser.close();
-server?.close();
+served.close();
 
 const rad = first.radii.slice(0, 6).map(([k, v]) => `${k}×${v}`).join(' ');
 const report = [`# shoot ${label} — ${target}`, `Sheet: ${path.join(dir, 'sheet.jpg')}`, '',

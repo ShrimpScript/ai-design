@@ -1,88 +1,66 @@
 ---
 name: design-recon
-description: Use for ALL frontend/UI/UX work — new pages, apps, dashboards, landing pages, components, restyles, design systems, brand work. Grounds every design in measured reality instead of model defaults. It reads the project context, asks only the questions that change the output, scrapes live reference sites (tokens, fonts, frames, flows, diagrams, motion), builds from a written brief, then lints for AI-slop and screenshots the result for critique and user feedback.
+description: Use for ALL frontend/UI/UX work — new pages, apps, dashboards, landing pages, components, restyles, design systems, brand identity, 3D heroes. Grounds design in measured reality instead of model defaults. Reads the project, asks only the questions that change the output, measures live reference sites (tokens, type, motion, flows), builds from a written brief, then verifies with slop/palette lint, breakpoint screenshots and, for 3D, geometric assembly checks.
 ---
 
 # Design Recon
 
-Generated UI looks generic because it is built from the average of the training data. Recon replaces the average with **measurements from real, chosen references** and a **brief the user approved**. After that, a **linter and screenshots** catch the defaults that slip through.
+Generated UI looks generic because it comes from the average of the training data. This skill replaces the average with **measurements from chosen references** and a **brief written once**, then **verifies** the result with tools and screenshots. Scripts live in `scripts/` (Node 18+, Playwright). Run them from the project root. First run on a new machine: `node scripts/doctor.mjs`.
 
-Scripts are in `scripts/` (Node 18+, Playwright). Run them from the project root. Every script prints a compact summary. Read the digests and look at the **sheets**, never at every frame.
-
-## 0. Pick the mode (don't ask for this; decide)
-
-| Situation | Mode |
+## 0. Decide the mode and effort (never ask)
+| Situation | Do |
 |---|---|
-| `.design/brief.md` exists, small change (component, fix, tweak) | **Build**: read brief → build → step 5 |
-| brief exists, new page/surface | **Surface**: read brief, run recon only if this surface type has no references yet → 4 → 5 |
-| no brief | **Full**: steps 1–6 |
-| user says "quick", "just do it", or no time | **Full**, but infer every intake answer, state your assumptions in one line, and skip checkpoint A |
-| user is deliberately vague ("a modern AI SaaS site", "make it look good") | **Quick**: the vagueness is the delegation. Choose the product, audience, direction, layout, and motion yourself |
+| `.design/brief.md` exists, small change | **Build**: read the brief → build → verify (step 5). No recon. |
+| brief exists, new surface | **Surface**: recon only if this surface type has no references yet → 4 → 5 |
+| no brief, clear request | **Full**: 1 → 6 |
+| "quick", no human available, or a deliberately vague prompt ("a modern AI SaaS site") | **Quick**: infer every answer, state the assumptions in one line in the brief, 2–3 references, skip checkpoint A |
 
-**Read the request before working.** Split it into (a) what the skill, the brief, or existing code already delivers, which you just apply and mention in one line, not re-derive or re-verify, and (b) what is actually new, where the effort goes. Don't restate or confirm things the user already decided.
+Split the request first: what the brief, the code or this skill already covers (apply it, mention it in one line) versus what is new (where the effort goes). Don't re-verify decisions the user already made.
 
-## 1. Read context silently (≤ 6 tool calls)
+## 1. Context, silently (≤ 6 tool calls)
+Stack and styling (`package.json`, Tailwind config, CSS vars), existing tokens/components/brand assets, product copy, audience. Also read `PRODUCT.md`/`DESIGN.md` (impeccable), a design section in `CLAUDE.md`, and `.design/log.md` (ideas already rejected). Never ask what you can find.
 
-Get these from the repo before asking anything: framework and styling (`package.json`, tailwind config, CSS vars), existing tokens, components and brand assets (logo, `public/`, `/brand`), product copy (README, existing pages, docs), what the product actually does, and who it's for. Never ask about anything you can find.
+## 2. Intake: one AskUserQuestion, ≤ 4 questions → `.design/brief.md`
+Use `references/intake.md`: context · brand · direction (3 options from the subject's world, never "Modern/Minimal/Bold") · references. The brief is the memory; later sessions read it instead of asking.
 
-## 2. Intake: one round, ≤ 4 questions (skip what step 1 answered)
+## 3. Recon (Full: 3–5 sites, Quick: 2–3)
+Pick sites with `references/sources.md`: the user's picks, 1–2 competitors (to differ from), 1–2 **adjacent-world** sites (the subject's physical or cultural world). Then:
+`recon.mjs <urls> --out .design/recon --pages 2` → read each `digest.md` (~1k tokens) and `board.mjs` → view `board.jpg`. Write **Steal / Avoid** lines into the brief. Each line cites a measured value and why it fits; steal systems (scale, density, borders, timing), never identity. Checkpoint A (Full only): the user ticks `board.html` and pastes back KEEP/NOTE.
 
-Read `references/intake.md`. Ask with **one** AskUserQuestion call. Each option must be concrete to *this* product. Never offer generic choices like "Modern / Minimal / Bold". Then write `.design/brief.md` from the template there. Every later session starts from that file, so the user explains the product once.
+## 4. Direction (in the brief, before code)
+Tokens (colours by role, 1–2 families + scale, spacing, radius ladder, elevation, motion) · ASCII layout · **one memorable thing** · slop pre-check (`references/slop.md` § Plan). Load only what the brief needs:
+| Need | Reference | Tool |
+|---|---|---|
+| Context rules (SaaS, brand, ads, personal) | `contexts.md` | — |
+| Type (house default: round, open, regular width, ≥ 400) | `fonts.md` | `specimen.mjs`, `fetch-font.mjs` |
+| Brand system, logo, advanced typography | `brand.md` | `brandboard.mjs` → board, OG, favicon, tokens |
+| Colour sanity | `slop.md` § Awkward | `palette.mjs` |
+| Hero, scroll, page transitions, state motion, diagrams | `patterns.md` | `motion.mjs` (measure exemplars, runs in the background) |
+| 3D object | `3d.md` | `inspect3d.mjs` |
 
-## 3. Recon: measure 3–5 references
-
-1. Choose references with `references/sources.md`: the user's URLs, 1–2 direct competitors, 1–2 **adjacent-world** references (from the subject's physical or cultural world, not the same product category), and one for motion if motion matters.
-2. Run:
-   `node scripts/recon.mjs <url> <url> … --out .design/recon --pages 2 [--flow "Pricing>Sign up"] [--motion]`
-   - `--pages N`: auto-captures pricing, signup, docs, and product pages. `--flow`: clicks through named steps (it never submits forms).
-   - `--motion`: load-sequence plus scroll filmstrip, hover diff, keyframes, and animation libraries. Use it when the brief's motion is not "none".
-   - Motion mechanics (scroll reveals with from→to values and timing, scroll-linked and pinned elements, GSAP/ScrollTrigger configs, page transitions, tab/toggle/accordion behaviour): `node scripts/motion.mjs <url…>` → `motion.md` + `motion-sheet.jpg`. It takes 20–120s per site, so run it in the background alongside recon, on the 1–2 references whose motion you want.
-3. `node scripts/board.mjs .design/recon`: prints a comparison table and writes `board.html` for the user plus `board.jpg` for you.
-4. Read each `digest.md` (~1k tokens) and view `board.jpg` plus at most 2 `sheet.jpg`.
-5. Write a **Steal / Avoid** list into the brief, e.g. "Steal: Linear's 1px `#ffffff14` borders instead of shadows, 13px/510 controls, 160ms `cubic-bezier(.25,.46,.45,.94)`." Every line must cite a measured value and say *why it fits this brief*. Steal **systems** (scale ratios, density, border logic, motion timing), never identity (logos, illustrations, copy, proprietary fonts).
-
-**Checkpoint A (skip in quick mode):** offer `board.html` (publish or open it). The user ticks traits and pastes back a `KEEP … / NOTE …` list. Apply it to the brief.
-
-## 4. Direction: plan before code
-
-Load `references/contexts.md` for the brief's context (SaaS/product, brand/marketing, content/ads, personal). Then write into `.design/brief.md` → `## Direction`:
-- **Tokens**: 5–7 named colours (hex, each with a role), 1–2 families with roles and a type scale (px, with ratio), a spacing base, a radius ladder (control < card < sheet), elevation strategy, and motion tokens (`references/motion.md`).
-- **Layout**: an ASCII wireframe of the key screen, plus alignment and grid.
-- **The one memorable thing**: where boldness is spent. Everything else stays quiet.
-- **Slop pre-check**: go through `references/slop.md` § Plan. Rewrite any choice you'd make for *any* similar product.
-
-**Brand (when none exists, or the surface is brand-led):** follow `references/brand.md`. Metaphor from the product's mechanism → 2–4 mark candidates rendered at 16–96px → wordmark and lockups → palette as roles → 1–2 graphic devices. Write `.design/brand.json` and run `node scripts/brandboard.mjs .design/brand.json`. That gives one board image, `og.png`, `favicon.svg`, and `tokens.css`, and prints the palette audit. Check any palette alone with `node scripts/palette.mjs tokens.css`.
-**3D object** (when an object explains the product): `references/3d.md`. Procedural Three.js first, then CC0 glTF, then pre-rendered. It needs a static fallback, reduced motion support, and a performance budget.
-**Type choice:** render candidates with `node scripts/specimen.mjs "Family" … --head "<real headline>" --bg --fg`. The house default is round, open, regular width, weight ≥ 400 (Google Sans Flex with `ROND` first).
-
-Hero, scroll transitions, page transitions, and in-page updates: `references/patterns.md` (recipes plus budgets). Fonts: `references/fonts.md`. It has the house round preference, tiers for AI-default, trend-saturated, condensed, and novelty/cliché faces, Google and Anthropic-style fallbacks, and picks by job. Self-host with `node scripts/fetch-font.mjs "Family:wght@400..700" --out public/fonts`.
-
-## 5. Build, then verify (every time, all modes)
-
-Build with real content from the brief (no lorem, fake metrics, or stock avatars). Put tokens in CSS variables or the Tailwind theme first, then components. Include every state: empty, loading, error, long text, and mobile.
-
-Then run both:
+## 5. Build, then verify (every mode)
+Real content (no lorem, fake metrics, stock avatars, "acme"). Tokens first, then components, and every state (empty, loading, error, long text, mobile). Then:
 ```
-node scripts/slop-lint.mjs src/            # static tells; HIGH findings must be fixed
-node scripts/palette.mjs src/styles.css     # awkward or generated colour combinations
-node scripts/shoot.mjs http://localhost:3000 --label v1   # or a .html path; add --click "Open drawer" for states
+node scripts/slop-lint.mjs src/                        # HIGH must be fixed
+node scripts/palette.mjs src/styles.css                 # awkward / AI colour combinations
+node scripts/shoot.mjs <url|file> --label v1           # 390/768/1440 + contrast, focus, overflow, fonts, motion
+node scripts/inspect3d.mjs <url|file>                   # only if there is 3D: must PASS, then cross-review
 ```
-View `sheet.jpg`. Fix every item `report.md` lists: overflow, contrast, focus, fonts that didn't load or are flagged by tier, reduced motion, and radius or type-size sprawl. Then critique against the brief: does it look like *this* product, or like any product? Remove one accessory.
+View `sheet.jpg`, fix every reported item, then critique: *this* product, or any product? Remove one accessory.
+**Budget:** ≤ 3 shoot rounds. Re-shoot only what changed (`--widths`, `--click`, `--frames`), and never re-run passing checks on unchanged code.
+**3D is the exception to "look once":** declare the assembly (what threads, rests on, or attaches to what), pass `inspect3d` in every pose, then have an independent reviewer (a sub-agent given only the spec and `views.jpg`) confirm each relationship. Repeat until two consecutive clean passes. Models look right from the hero angle while floating or clipping in 3D.
 
-**Verification budget (don't over-verify):** at most 3 shoot rounds. After the first round, re-shoot only the widths or states your fix touched (`--widths 1440`, `--click`). Re-lint only changed files. Never re-run a check that already passed on unchanged code. Stop as soon as the report is clean and you've looked at the sheet once. Test interactions with one scripted pass only when the page has real logic (state, money, dates).
+## 6. Checkpoint B → log
+One AskUserQuestion with 2–4 dials on what's actually uncertain (`intake.md` § Feedback). Apply the answers, then append tried / rejected / kept to `.design/log.md`.
 
-## 6. Checkpoint B: targeted feedback, then log
-
-Show the sheet and ask **one** AskUserQuestion with 2–4 dial questions chosen from what's actually uncertain (templates in `intake.md` § Feedback), e.g. density (tighter / as is / airier) or accent (louder / as is / quieter). Never ask "what do you think?". Apply the answers. Then append 3 lines to `.design/log.md`: what was tried, what the user rejected, and what stays. Read the log at the start of later sessions so you don't repeat rejected ideas.
-
-## Works with other skills
-- An existing `PRODUCT.md` / `DESIGN.md` (impeccable), a `CLAUDE.md` design section, or a tokens file counts as the brief's source. Read it and skip the questions it answers.
-- Taste skills (`frontend-design`, impeccable's `polish` / `bolder` / `quieter`) run *on top of* the brief: this skill supplies the evidence and verification, they supply the critique vocabulary. Don't run two intakes.
-- Chart work: follow a dataviz skill if one is installed. Artifact pages: follow the artifact page contract (single file, allowed CDNs).
+## With other skills (hand-offs, no double work)
+- **frontend-design, impeccable (taste and critique):** run on top of this brief. They critique; this skill measures and verifies. One intake only. If their defaults conflict with the brief (e.g. a serif/cream look), the brief wins.
+- **artifact-design:** when the output is a claude.ai artifact, its page contract (single file, allowed CDNs, theme tokens) governs packaging. This skill governs the design.
+- **dataviz:** charts, KPI tiles and chart colours follow it, with the brief's palette as input.
+- **run:** start the app to get a URL for `shoot.mjs`/`inspect3d.mjs`. **code-review / simplify:** after the build, for the code.
+- **Other stacks:** Tailwind v4 via `brandboard`'s `tokens.tailwind.css`; Next.js fonts via `next/font` with the chosen family. Native mobile is out of scope, but the brief, brand and palette still apply.
 
 ## Rules
-
-- The brief's explicit words beat every rule here, including a slop rule. Record a deliberate exception as `lint-allow: rule-id` in the brief.
-- Legal and ethical: respect robots.txt (the default), never bypass logins or paywalls, and never copy logos, illustrations, copy, or paid font files. Recon is for measurement and inspiration.
-- Token budget: digests and sheets only. Don't open `tokens.json` unless a value is missing from the digest. Don't read full-page frames individually.
-- If Playwright is missing: `npm i -D playwright && npx playwright install chromium`. If a site blocks headless browsers, drop it and pick another.
+- The brief's explicit words beat every rule here. Record exceptions as `lint-allow: rule-id`.
+- Respect robots.txt, never bypass logins or paywalls, and never copy logos, copy, illustrations or paid font files. Third-party products appear as plain-text names, not logos or colours.
+- Token budget: digests and contact sheets, not raw frames or `tokens.json`.

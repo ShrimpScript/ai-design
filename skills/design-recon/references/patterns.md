@@ -1,6 +1,15 @@
-# Patterns: heroes, scroll, page transitions, in-page updates
+# Patterns: motion tokens, heroes, scroll, page transitions, in-page updates, diagrams
 
 Measure before you design motion: `node scripts/motion.mjs <exemplar> <competitor>` gives reveal values, timings, scroll-linked and pinned elements, GSAP/ScrollTrigger configs, page-transition type, and tab/toggle/accordion behaviour. Copy the **numbers and the restraint**, not the choreography. Motion recon takes 20–120s per site, so start it in the background alongside `recon.mjs`.
+
+## Motion tokens and rules
+Motion answers an action (open, move, confirm) or marks the one orchestrated moment. Animate `transform` and `opacity`, make enter slower than exit, and let distance scale duration. Reduced motion means instant or opacity only, with no loops.
+```css
+:root{ --dur-1:100ms; --dur-2:160ms; --dur-3:240ms; --dur-4:400ms;   /* hover · small UI · drawers · hero only */
+  --ease-out:cubic-bezier(.2,.8,.2,1); --ease-in:cubic-bezier(.4,0,1,1); --ease-move:cubic-bezier(.3,.7,.1,1); }
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+```
+Tool choice, lightest first: CSS transitions → View Transitions → CSS scroll timelines → Motion (React springs and gestures) → GSAP (timelines, pin + scrub, free) → Lottie/dotLottie (designer vector, < 150 KB) → Rive (interactive state machines) → Three.js (only for a real object, see `3d.md`).
 
 ## Hero: clean, specific, complete at rest
 Recon's `## Hero` line measures this anatomy on references. Targets for a clean SaaS hero:
@@ -64,3 +73,6 @@ Scroll-driven animations ship in Chrome 115+ and Safari 26+. Firefox stable stil
 | Page transitions | vercel.com, astro.build (view transitions), framer.com |
 | Craft, WebGL (only if the brief wants spectacle) | lusion.co, igloo.inc, awwwards.com Sites of the Day |
 | Technique demos, not references to copy | tympanus.net/codrops, motion.dev examples, scroll-driven-animations.style |
+
+## Diagrams
+Show the **real mechanism** (the data flow, the states, the timeline) with labels in the product's vocabulary. Build it as inline SVG from the tokens: the same font, stroke = border width, one accent for the path that matters, and `currentColor` for dark mode. Recon saves reference SVGs to `svg/`, so study their grid, stroke, and arrowheads, not their art. Use Mermaid only in internal docs. Animate a diagram only to show sequence.

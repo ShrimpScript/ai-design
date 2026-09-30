@@ -26,7 +26,7 @@ The brief's explicit words override this list. Everything here is a *default*, n
 | Monospace for small labels as decoration | Mono only for code, IDs, or tabular alignment where it helps |
 | Glassmorphism, noise overlays, grid-line backgrounds by default | Only when the direction calls for them |
 | Centred everything | Left-aligned reading, centred only for short, singular moments |
-| Fade-up on every section, hover-lift on every card, infinite pulses | One orchestrated moment; motion that answers actions (`motion.md`) |
+| Fade-up on every section, hover-lift on every card, infinite pulses | One orchestrated moment; motion that answers actions (`patterns.md`) |
 | Tailwind default palette (`indigo-600`, `slate-*`) used raw | Named brand tokens; tints computed from them |
 | Lucide icons at 24px/2px everywhere with no adjustment | Size icons to the text (1em-ish), and match stroke to the type weight |
 

@@ -33,22 +33,23 @@ If you're deliberately vague ("a modern AI SaaS site"), the skill treats that as
 
 ```
 skills/design-recon/
-  SKILL.md                 the workflow (~85 lines; references load only when needed)
+  SKILL.md                 the workflow (~1.6k tokens, was 2.4k; references load only when needed)
   references/
     intake.md              the 4 questions, brief template, feedback dials
     contexts.md            product/SaaS · brand/marketing · content+ads (IAB, Better Ads, CLS, consent) · personal
     slop.md                tells → replacements (visual, copy, app-specific) + plan pre-check
     sources.md             where references come from, per need (flows, motion, diagrams, fonts…)
-    motion.md              motion tokens, tool choice (CSS → View Transitions → Motion/GSAP → Lottie/Rive), diagrams
     brand.md               brand systems: metaphor → mark (16px test) → wordmark/lockups → palette roles → advanced typography → graphic devices; awkward-branding rejects
-    3d.md                  3D objects: procedural Three.js / CC0 glTF / pre-rendered; lighting, materials, motion, fallback, budget; 3D slop
-    patterns.md            clean heroes, scroll transitions, page transitions, in-page updates: recipes, budgets, exemplars to measure
+    3d.md                  3D objects: assembly spec → build from relationships → inspect3d → independent cross-review ×2; lighting, materials, fallback, budget, 3D slop
+    patterns.md            motion tokens + tool choice, clean heroes, scroll transitions, page transitions, in-page updates: recipes, budgets, exemplars to measure
     fonts.md               house preference (round, open, regular width, ≥ 400), Google and Anthropic-style fallbacks, tiers (AI-default / saturated / condensed / novelty), commercial → free
   scripts/
     recon.mjs              measure live sites → digest.md (~1k tokens, incl. hero anatomy) + one contact sheet
     motion.mjs             measure HOW a site moves: reveals (from→to, timing, stagger), scroll-linked/pinned, GSAP/ScrollTrigger, page transitions, tab/toggle/accordion motion
     board.mjs              merge recons → comparison table + board.html the user ticks and copies back
-    shoot.mjs              screenshot YOUR build at 390/768/1440 + runtime audit
+    shoot.mjs              screenshot YOUR build at 390/768/1440 + runtime audit (--frames for scroll states, --click for UI states)
+    inspect3d.mjs          3D assembly verification: threading, gravity, attachment, interpenetration in every pose; 6 orbit views + x-ray; --poster fallback
+    doctor.mjs             environment check (Playwright, Chromium, WebGL, network) with the fix for each gap
     slop-lint.mjs          static detector for generated-UI tells (no dependencies)
     brandboard.mjs         brand.json → one brand board (lockups, 16px favicon test, palette, type, voice, OG) + og.png, favicon.svg, tokens.css
     palette.mjs            awkward or AI colour-scheme audit in OKLCH (muddy, vibrating, neon pairs, grey temperature, duplicates, contrast)
@@ -56,7 +57,8 @@ skills/design-recon/
     fetch-font.mjs         self-host Google Fonts / Fontshare faces (woff2 + @font-face)
     lib/fonts.mjs          font tiers + round list shared by lint, shoot, recon, specimen, brandboard
     lib/color.mjs          OKLCH, contrast, palette audit
-  tests/fixtures/slop.html a "typical AI landing page" (scores 0/100, 19 findings)
+  tests/smoke.mjs          9 smoke tests: every script against known-good and known-bad fixtures (~20s; --offline)
+  tests/fixtures/          slop page (0/100, 19 findings), threaded vs floating 3D part
 ```
 
 ### What recon measures, per site
@@ -87,6 +89,7 @@ It respects `robots.txt` (RFC 9309 matching), dismisses cookie banners with "rej
 | Structured user feedback | — | — | — | ✔ tickable reference board + dial questions |
 | Deterministic slop detector | — | ✔ | — | ✔ `slop-lint` (static) + `shoot` (runtime) |
 | Screenshot critique loop | suggested | ✔ | — | ✔ one contact sheet per round |
+| 3D assembly verification | — | — | — | ✔ geometric checks + x-ray + independent cross-review |
 | Fonts | advice (its recommended list is now itself overused) | advice | pairings list | ✔ 3 enforced tiers, specimen renders, commercial→free map, self-host |
 | Motion from real sites | — | `animate` command | — | ✔ measured reveals, scrub, pinning, transitions, springs |
 | Verification budget (no over-checking) | — | — | — | ✔ ≤ 3 targeted shoot rounds |
@@ -109,6 +112,7 @@ It **stacks** with the others: `frontend-design`'s taste principles and `impecca
 - **Fonts behind cross-origin CSS:** `@font-face` names can be missing. Families still appear via computed styles and loaded fonts.
 - **Static lint is textual:** it can't see styles computed at runtime (CSS-in-JS themes). `shoot.mjs` covers the runtime side (fonts, radii, contrast), and neither judges taste, so the sheet still needs a look.
 - **Frames are timing snapshots:** filmstrips show states, not smooth motion. `--video` records a webm for humans.
+- **3D verification covers declared relationships:** threading, attachment, gravity and clearance are checked only for parts you annotate. Undeclared mistakes (wrong proportions, ugly composition) still need the cross-review, which is why it's mandatory for 3D.
 - **3D in the artifact viewer:** the hero loads Three.js from jsDelivr; if a host blocks it, the built-in SVG fallback stays. Heavy glTF models need a real host (keep them < 1.5 MB).
 - **Brand marks are drawn by the model:** strong for geometric marks, weak for illustrative or hand-drawn identities. Use a designer for those; the brandboard still tests the result.
 - **Round preference is house taste:** earlier demos (Rail's condensed Archivo, Firstlight's tight tracking) predate it and now draw MED lint findings. Set `lint-allow` in a brief to opt out.
