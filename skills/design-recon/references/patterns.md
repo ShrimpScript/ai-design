@@ -54,6 +54,7 @@ Scroll-driven animations ship in Chrome 115+ and Safari 26+. Firefox stable stil
 ## Page-to-page transitions
 - **Multi-page sites:** `@view-transition { navigation: auto; }` on both pages. It is supported in Chrome 126+ and Safari 18.2+. Firefox doesn't have it yet and gets an instant load, which is fine. Keep it ≤ 300ms. It waits for the new page to render, so slow pages feel slower.
 - **SPA:** `document.startViewTransition(() => render())` behind a feature check. The equivalents are Astro `<ClientRouter />`, React's `<ViewTransition>` (check its current release status), and Motion `layoutId` for shared elements.
+- **Branded, not blank:** the transition uses a brand device (a wipe in the brand's material, the mark, the clicked element morphing). A fade through an empty page reads as a loading gap. In a blind round 3, a water-rise wipe beat a blank fade on every judge's notes.
 - **What moves:** the thing that was clicked morphs into the destination (`view-transition-name` on both, unique per page), and the rest crossfades. Use directional slides only for sequences (onboarding steps, back/forward). Motion recon reports whether an exemplar reloads or routes client-side, and whether it uses view transitions.
 
 ## In-page updates (state changes)

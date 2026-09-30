@@ -108,6 +108,46 @@ The same prompt was sent to a fresh agent with the updated skill (`A2/`, commit 
   - The hero's loaves repeat the list below.
   All four became guardrails in `craft.md`.
 
+## Round 3: a production web app with motion as a primary requirement (the hard test)
+**Prompt** (`round3-prompt.md`, identical for both):
+- **Premise:** the marketing site for *Tidemark*, a fixed AI flood-forecasting company. Brand, copy and content are the builder's to design.
+- **Stack:** Vite + React + TypeScript, 6 routed pages, a validated demo form, and a shared design system.
+- **Motion required:** a signature hero motion graphic, scroll storytelling, page transitions and micro-interactions, with reduced motion, accessibility and performance.
+- **Runs:** `E/` = design-recon, `F/` = frontend-design. Both launched together.
+
+| | E: design-recon | F: frontend-design |
+|---|---|---|
+| Wall time | **1,547 s** | 1,832 s |
+| Tokens | **253k** | 285k |
+| Tool calls | 94 | 122 |
+| axe serious, 6 main pages | 30 (contrast on 2 pages) | 35 (contrast on 4 pages) |
+| Home CLS / console errors / mobile overflow | 0.014 / 0 / 0 | 0.001 / 0 / 0 |
+| Demo form: errors on empty, success on valid | ✔ ✔ | ✔ ✔ |
+| Mobile menu, reduced motion (hero freezes) | ✔ ✔ | ✔ ✔ |
+| Initial JS (gzip) | ~151 KB | ~135 KB |
+
+**Capture bug, disclosed:** the first judging round used Playwright full-page screenshots. These resize the viewport, which left E's scroll-reveal case study blank and froze F's transition overlay across pages. Real visitors see neither problem. That round split 2–2 and is **discarded**. `tiles3.mjs` re-captures each page as a visitor sees it (screens while scrolling, stitched), and 4 fresh judges re-judged:
+| Judge | E overall | F overall | E brand | F brand | E motion | F motion | E credibility | F credibility | E mobile | F mobile | Ships |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 (E = X) | 8 | 8.5 | 8 | 7 | 8 | 9 | 8 | 9 | 8 | 7 | F |
+| 2 (E = Y) | 8 | 8 | 9 | 7 | 8 | 9 | 8 | 9 | 8 | 8 | F |
+| 3 (E = X) | 8 | 8 | 8 | 7 | 8 | 9 | 8 | 9 | 8 | 7 | F |
+| 4 (E = Y) | 8 | 7 | 8 | 6 | 8 | 8 | 8 | 8 | 8 | 7 | E |
+
+**Result:** close to a draw, with frontend-design narrowly ahead.
+- **Ship votes:** F 3, E 1.
+- **Mean overall:** E 8.0, F 7.9.
+- **design-recon won** brand in every judge's scores and mobile in 3 of 4. It also finished faster and cheaper this time.
+- **frontend-design won** motion and credibility. Its hero is a legible depth heatmap on a light basemap, linked to rain, tide and river curves, and its page transition is a branded water-rise wipe.
+
+**Where design-recon lost:**
+- Its scroll story's caption and map drifted out of sync ("T+8 h" beside a map at T+27 h).
+- Its dark street-line map looked striking but read as less informative.
+- Its page transition was a blank fade.
+- A display-size pull quote wrapped into a narrow tower.
+
+All four are now guardrails (`craft.md`, `patterns.md`). One judge-reported flaw was ours, not E's: the "Area" field repeating the organisation name came from the eval's form-filler.
+
 ## Limitations (read before quoting)
 - **n = 1 run per skill per prompt (2 prompts).** The outputs vary run to run. This is an indication, not a statistically meaningful result.
 - **Judges are LLMs** from the same model family as the builders, seeing screenshots only (no interaction). Human judges would be better.
