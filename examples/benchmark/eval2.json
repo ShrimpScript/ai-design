@@ -1,0 +1,56 @@
+{
+ "C": {
+  "bytes": 35846,
+  "loadMs": 1310,
+  "axe": {
+   "critical": 0,
+   "serious": 1,
+   "moderate": 0,
+   "minor": 0
+  },
+  "axeRules": [
+   "color-contrast(s×1)"
+  ],
+  "hosts": [
+   "fonts.googleapis.com",
+   "fonts.gstatic.com"
+  ],
+  "functional": {
+   "steps": [
+    "submitted: Reserve my bread"
+   ],
+   "filled": 3,
+   "invalidFields": [],
+   "confirmed": true
+  },
+  "consoleErrors": [],
+  "mobileOverflowPx": 0
+ },
+ "D": {
+  "bytes": 30194,
+  "loadMs": 801,
+  "axe": {
+   "critical": 0,
+   "serious": 3,
+   "moderate": 0,
+   "minor": 0
+  },
+  "axeRules": [
+   "color-contrast(s×3)"
+  ],
+  "hosts": [
+   "fonts.googleapis.com",
+   "fonts.gstatic.com"
+  ],
+  "functional": {
+   "steps": [
+    "submitted: Reserve my bread"
+   ],
+   "filled": 2,
+   "invalidFields": [],
+   "confirmed": true
+  },
+  "consoleErrors": [],
+  "mobileOverflowPx": 0
+ }
+}

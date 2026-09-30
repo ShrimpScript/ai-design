@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tollgate Bakery — reserve weekend bread</title>
+<meta name="description" content="Tollgate Bakery on Tollgate Road bakes on Saturday and Sunday mornings. Reserve your loaves by Thursday 8pm and collect them warm.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --flour:#F4F5F1;
+  --tile:#E3E8E4;
+  --tile-2:#D5DCD7;
+  --ink:#1D2427;
+  --ink-soft:#4E5A5E;
+  --enamel:#0E5B78;
+  --enamel-deep:#0A4359;
+  --crust:#8C4A1E;
+  --wheat:#E2B456;
+  --line:rgba(29,36,39,.16);
+  --line-strong:rgba(29,36,39,.32);
+  --kraft:#C9A578;
+  --r-ctl:4px; --r-card:10px; --r-pill:999px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --dur:450ms;
+  --display:"Caprasimo", Georgia, serif;
+  --text:"Onest", system-ui, sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--flour);color:var(--ink);font:400 17px/1.55 var(--text);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+p{text-wrap:pretty;margin:0 0 1em}
+h1,h2,h3{margin:0;font-weight:600}
+a{color:var(--enamel)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--enamel);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.num{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* header */
+header.top{border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:28px;height:68px}
+.brand{white-space:nowrap;display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.brand b{font:400 22px/1 var(--display);letter-spacing:-.005em}
+.brand svg{flex:none}
+.top nav{display:flex;gap:22px;margin-left:auto}
+.top nav a{color:var(--ink-soft);text-decoration:none;font-weight:500;font-size:15px;padding:12px 2px}
+.top nav a:hover{color:var(--ink)}
+.deadline .short{display:none}
+.deadline{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;background:var(--tile);border-radius:var(--r-pill);padding:7px 14px;white-space:nowrap}
+.deadline i{width:8px;height:8px;border-radius:50%;background:var(--enamel);display:block}
+
+/* hero */
+.hero{padding:56px 0 64px}
+.hero .wrap{display:grid;grid-template-columns:4.2fr 7.8fr;gap:44px;align-items:center}
+.hero h1{font:400 clamp(44px,6.4vw,76px)/1.02 var(--display);letter-spacing:-.015em;text-wrap:balance;max-width:11ch}
+.hero .sub{font-size:17px;color:var(--ink-soft);margin:22px 0 28px;max-width:34ch}
+.hero .sub strong{color:var(--ink);font-weight:600}
+.cta{display:inline-flex;align-items:center;gap:10px;background:var(--enamel);color:#fff;text-decoration:none;border:0;border-radius:var(--r-ctl);padding:15px 22px;font-weight:600;font-size:17px;cursor:pointer;transition:background .2s}
+.cta:hover{background:var(--enamel-deep)}
+.cta svg{transition:transform .3s var(--ease)}
+.cta:hover svg{transform:translateY(2px)}
+.hero .aside{margin-top:18px;font-size:15px;color:var(--ink-soft)}
+
+/* bake board (signature) */
+.board{position:relative;padding:28px 28px 24px;background:var(--tile);border-radius:var(--r-card)}
+.board-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;font-size:15px;color:var(--ink-soft)}
+.board-head strong{color:var(--ink);font-weight:600}
+.shelf{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:start;position:relative;z-index:1}
+.shelf figure{margin:0;text-align:center}
+.shelf svg{width:100%;height:auto;display:block;overflow:visible}
+.shelf figcaption{padding:36px 2px 0;position:relative;z-index:2}
+.shelf .lname{display:block;font-size:13px;font-weight:600;line-height:1.25;min-height:2.5em}
+.shelf .left{display:block;font:400 30px/1.1 var(--display);margin-top:4px}
+.shelf .left small{font:500 13px/1 var(--text);color:var(--ink-soft);margin-left:3px}
+.shelf .low .left{color:var(--crust)}
+.shelf .out .left{color:var(--ink-soft);font:600 15px/2.2 var(--text)}
+.add{margin-top:10px;min-height:40px;width:100%;max-width:120px;border:1px solid var(--line-strong);background:var(--flour);border-radius:var(--r-ctl);font-weight:600;font-size:13px;cursor:pointer;color:var(--enamel)}
+.add:hover{border-color:var(--enamel)}
+.add[aria-pressed="true"]{background:var(--enamel);color:#fff;border-color:var(--enamel)}
+.add:disabled{color:var(--ink-soft);cursor:not-allowed;opacity:.6}
+.plank{position:absolute;left:0;right:0;top:150px;height:24px;border-radius:var(--r-ctl);
+  background:
+    repeating-linear-gradient(90deg,rgba(0,0,0,0) 0 140px,rgba(90,55,20,.12) 140px 141px),
+    linear-gradient(180deg,#D8B384 0,#C8A06E 40%,#A57C4B 100%);
+  box-shadow:0 10px 18px -12px rgba(60,35,10,.55)}
+.board-foot{margin-top:18px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-soft);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+.loaf{transform-box:fill-box;transform-origin:50% 100%}
+.rising .loaf{animation:rise 900ms var(--ease) both}
+@keyframes rise{from{transform:scale(.9,.72);opacity:.2}60%{opacity:1}to{transform:none;opacity:1}}
+.tick{animation:tick 450ms var(--ease)}
+@keyframes tick{0%{transform:translateY(-6px);opacity:.3}100%{transform:none;opacity:1}}
+
+/* order */
+section{scroll-margin-top:16px}
+.order{padding:72px 0;background:var(--tile);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sec-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:28px}
+.sec-head h2{font-size:30px;line-height:1.15;letter-spacing:-.01em}
+.sec-head p{color:var(--ink-soft);margin:8px 0 0;max-width:52ch}
+.days{display:inline-flex;background:var(--flour);border:1px solid var(--line);border-radius:var(--r-pill);padding:4px}
+.days button{border:0;background:none;border-radius:var(--r-pill);padding:10px 18px;cursor:pointer;font-weight:600;font-size:15px;color:var(--ink-soft);min-height:44px}
+.days button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.days button span{font-weight:400;opacity:.8;margin-left:6px}
+
+.order-grid{display:grid;grid-template-columns:1fr 380px;gap:32px;align-items:start}
+.loaves{list-style:none;margin:0;padding:0;border-top:1px solid var(--line-strong)}
+.row{display:grid;grid-template-columns:112px 1fr auto;gap:20px;align-items:center;padding:20px 0;border-bottom:1px solid var(--line-strong)}
+.row .pic{background:var(--flour);border-radius:var(--r-card);height:88px;display:grid;place-items:center;padding:6px 8px}
+.row .pic svg{width:100%;height:auto}
+.row h3{font:400 22px/1.15 var(--display);letter-spacing:-.005em}
+.row .price{font-weight:600;color:var(--crust);margin-left:8px;font-size:17px}
+.row .desc{font-size:15px;color:var(--ink-soft);margin:4px 0 10px}
+.stock{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-soft)}
+.bar{width:120px;height:6px;border-radius:var(--r-ctl);background:rgba(29,36,39,.12);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--enamel);border-radius:var(--r-ctl);transition:width var(--dur) var(--ease)}
+.row.low .bar i{background:var(--crust)}
+.row.low .stock b{color:var(--crust)}
+.row.out h3,.row.out .price{color:var(--ink-soft)}
+.stepper{display:flex;align-items:center;border:1px solid var(--line-strong);border-radius:var(--r-ctl);background:var(--flour)}
+.stepper button{width:44px;height:44px;border:0;background:none;cursor:pointer;font-size:22px;line-height:1;color:var(--ink)}
+.stepper button:disabled{color:rgba(29,36,39,.3);cursor:not-allowed}
+.stepper output{min-width:32px;text-align:center;font:400 22px/1 var(--display)}
+.row .na{font-size:13px;color:var(--ink-soft);max-width:12ch;text-align:right}
+
+/* bag */
+.bag{position:sticky;top:20px;background:var(--flour);border-radius:var(--r-card);border:1px solid var(--line);box-shadow:0 18px 40px -24px rgba(29,36,39,.45);overflow:hidden}
+.bag-top{background:var(--kraft);padding:18px 22px 16px;position:relative;
+  background-image:linear-gradient(135deg,rgba(255,255,255,.18),rgba(0,0,0,0) 60%),repeating-linear-gradient(0deg,rgba(90,60,25,.05) 0 2px,rgba(0,0,0,0) 2px 5px)}
+.bag-top::after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:14px;
+  background:radial-gradient(circle at 7px 0,var(--kraft) 6.5px,transparent 7px) 0 0/14px 14px repeat-x}
+.bag-top h3{font:400 22px/1.2 var(--display);color:#2B1C0C}
+.bag-top p{margin:2px 0 0;font-size:13px;color:#3F2A12}
+.bag-body{padding:26px 22px 22px}
+.bag-items{list-style:none;margin:0 0 14px;padding:0;min-height:44px}
+.bag-items li{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.bag-items li svg{width:44px;flex:none}
+.bag-items li span{flex:1;font-size:15px}
+.bag-items li b{font-weight:600;font-size:15px}
+.bag-items li.drop{animation:drop 450ms var(--ease)}
+@keyframes drop{from{transform:translateY(-14px);opacity:0}to{transform:none;opacity:1}}
+.bag-empty{font-size:15px;color:var(--ink-soft);padding:6px 0 10px}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin:6px 0 18px}
+.total span{font-size:15px;color:var(--ink-soft)}
+.total b{font:400 30px/1 var(--display)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line-strong);border-radius:var(--r-ctl);background:#fff;padding:11px 12px;font-size:17px;min-height:46px}
+.field textarea{min-height:64px;resize:vertical}
+.field .hint{font-size:13px;color:var(--ink-soft);margin-top:4px}
+.field.bad input,.field.bad select{border-color:#A3321A}
+.err{color:#A3321A;font-size:15px;margin:0 0 12px}
+.bag .cta{width:100%;justify-content:center}
+.bag .fine{font-size:13px;color:var(--ink-soft);margin:12px 0 0}
+.done{padding:26px 22px 22px}
+.done h3{font:400 30px/1.15 var(--display);margin-bottom:10px}
+.done .ref{display:inline-block;background:var(--tile);border-radius:var(--r-ctl);padding:4px 10px;font-weight:600;letter-spacing:.02em;margin-bottom:12px}
+.done ul{padding-left:18px;margin:0 0 14px}
+.linkbtn{background:none;border:0;padding:0;color:var(--enamel);text-decoration:underline;cursor:pointer;font-weight:600}
+
+/* week */
+.week{padding:80px 0}
+.week h2{font:400 clamp(32px,4vw,44px)/1.08 var(--display);letter-spacing:-.01em;max-width:18ch;text-wrap:balance}
+.week .lede{color:var(--ink-soft);max-width:56ch;margin:14px 0 40px}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative;counter-reset:s}
+.steps::before{content:"";position:absolute;left:10px;right:10px;top:9px;height:2px;background:linear-gradient(90deg,var(--enamel) 0,var(--enamel) 20%,var(--wheat) 20%,var(--crust) 100%)}
+.steps li{position:relative;padding:34px 18px 0 0}
+.steps li::before{content:"";position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;background:var(--flour);border:3px solid var(--crust)}
+.steps li:first-child::before{border-color:var(--enamel)}
+.steps time{display:block;font:400 22px/1.15 var(--display);margin-bottom:6px}
+.steps h3{font-size:17px;margin-bottom:6px}
+.steps p{font-size:15px;color:var(--ink-soft);margin:0}
+.steps .you{color:var(--enamel);font-weight:600}
+
+/* find */
+.find{padding:72px 0 80px;border-top:1px solid var(--line)}
+.find .wrap{display:grid;grid-template-columns:1fr 1fr 1fr;gap:40px}
+.find h2{font-size:30px;margin-bottom:10px}
+.find h3{font-size:17px;margin-bottom:8px}
+.hours{width:100%;border-collapse:collapse;font-size:15px}
+.hours td{padding:7px 0;border-bottom:1px solid var(--line)}
+.hours td:last-child{text-align:right}
+.hours tr.bake td{font-weight:600}
+address{font-style:normal}
+footer{background:var(--ink);color:#C9D1D2;font-size:13px;padding:26px 0}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer a{color:#fff}
+
+@media (max-width:980px){
+  .hero .wrap{grid-template-columns:1fr;gap:28px}
+  .order-grid{grid-template-columns:1fr}
+  .bag{position:static}
+  .find .wrap{grid-template-columns:1fr 1fr}
+  .top nav{display:none}
+  .deadline{margin-left:auto}
+}
+@media (max-width:760px){
+  .steps{grid-template-columns:1fr;gap:22px}
+  .steps::before{left:9px;right:auto;top:10px;bottom:10px;width:2px;height:auto;background:linear-gradient(180deg,var(--enamel) 0,var(--enamel) 18%,var(--wheat) 18%,var(--crust) 100%)}
+  .steps li{padding:0 0 0 38px}
+}
+@media (max-width:560px){
+  body{font-size:16px}
+  .deadline .long{display:none}.deadline .short{display:inline}
+  .wrap{padding:0 16px}
+  .top .wrap{height:58px;gap:12px}
+  .brand b{font-size:17px}
+  .deadline{font-size:13px;padding:6px 11px}
+  .hero{padding:22px 0 36px}
+  .hero h1{font-size:50px}
+  .hero .sub{font-size:16px;margin:12px 0 16px}
+  .hero .aside{display:none}
+  .board{padding:16px 12px 16px}
+  .board-head{margin-bottom:10px;font-size:13px}
+  .shelf figcaption{padding-top:30px}
+  .shelf{grid-template-columns:repeat(3,1fr)}
+  .shelf figure:nth-child(n+4){display:none}
+  .shelf .left{font-size:22px}
+  .hero .cta{display:none}
+  .row .stepper{justify-self:start;width:max-content}
+  .board-foot{display:none}
+  .hero .wrap{gap:14px}
+  .row{grid-template-columns:76px 1fr;gap:4px 14px}
+  .row .pic{height:64px;grid-row:span 2}
+  .row .ctl{grid-column:2}
+  .row h3{font-size:22px}
+  .bar{width:90px}
+  .find .wrap{grid-template-columns:1fr;gap:28px}
+  .order{padding:48px 0}
+  .week{padding:56px 0}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="Tollgate Bakery, home">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><ellipse cx="15" cy="18" rx="13" ry="9" fill="#A45C27"/><ellipse cx="13" cy="15.5" rx="9" ry="5" fill="#C98A4B"/><path d="M7 16c3-3 9-5 16-2" stroke="#EBC585" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+      <b>Tollgate Bakery</b>
+    </a>
+    <nav aria-label="Page">
+      <a href="#order">This weekend’s bake</a>
+      <a href="#week">How pre-order works</a>
+      <a href="#find">Find us</a>
+    </nav>
+    <div class="deadline" id="deadlinePill"><i aria-hidden="true"></i><span class="long">Orders close Thu 8pm</span><span class="short">Closes Thu 8pm</span></div>
+  </div>
+</header>
+
+<main>
+<section class="hero" aria-labelledby="keyline">
+  <div class="wrap">
+    <div>
+      <h1 id="keyline"><span id="leftTotal" class="num">38</span> loaves left for <span id="heroDay">Saturday</span>.</h1>
+      <p class="sub">We bake once, early, on Saturday and Sunday. Reserve yours by <strong>Thursday 8pm</strong>, collect it still warm, and pay at the counter.</p>
+      <a class="cta" href="#order">Reserve <span id="ctaDay">Saturday</span> bread
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v11M3 8.5 8 13l5-4.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <p class="aside">No account, no card. Just your name and a phone number.</p>
+    </div>
+
+    <div class="board" aria-label="This weekend’s bake board">
+      <div class="board-head"><span><strong id="boardDate">Saturday 3 October</strong> · bake from 04:30</span><span id="boardOf" class="num"></span></div>
+      <div class="plank" aria-hidden="true"></div>
+      <div class="shelf rising" id="shelf"></div>
+      <div class="board-foot"><span>Counts update as people reserve.</span><span>Anything unreserved goes on the walk-in shelf at 08:00.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="order" id="order" aria-labelledby="orderTitle">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <h2 id="orderTitle">Reserve for the weekend</h2>
+        <p>Pick a morning, choose your loaves, and we’ll set them aside with your name on the bag.</p>
+      </div>
+      <div class="days" role="group" aria-label="Pickup day">
+        <button type="button" data-day="sat" aria-pressed="true">Saturday<span id="satDate"></span></button>
+        <button type="button" data-day="sun" aria-pressed="false">Sunday<span id="sunDate"></span></button>
+      </div>
+    </div>
+
+    <div class="order-grid">
+      <ul class="loaves" id="loaves"></ul>
+
+      <aside class="bag" aria-labelledby="bagTitle" id="bag">
+        <div class="bag-top">
+          <h3 id="bagTitle">Your bag</h3>
+          <p id="bagFor">For Saturday 3 October</p>
+        </div>
+        <div id="bagForm">
+          <form class="bag-body" id="form" novalidate>
+            <ul class="bag-items" id="bagItems" aria-live="polite"></ul>
+            <div class="total"><span>Pay at the counter</span><b class="num" id="total">£0.00</b></div>
+            <div class="field" id="fSlot">
+              <label for="slot">Pickup time</label>
+              <select id="slot" name="slot"></select>
+            </div>
+            <div class="field" id="fName">
+              <label for="name">Name for the bag</label>
+              <input id="name" name="name" autocomplete="name" placeholder="e.g. Priya Shah">
+            </div>
+            <div class="field" id="fPhone">
+              <label for="phone">Mobile number</label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="07700 900123">
+              <div class="hint">One text on Friday to confirm. Nothing else.</div>
+            </div>
+            <p class="err" id="err" role="alert" hidden></p>
+            <button class="cta" type="submit" id="submit">Reserve my bread</button>
+            <p class="fine">Can’t make it? Reply CANCEL to Friday’s text and we’ll put your loaves on the shelf.</p>
+          </form>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section class="week" id="week" aria-labelledby="weekTitle">
+  <div class="wrap">
+    <h2 id="weekTitle">Why we stop taking orders on Thursday night</h2>
+    <p class="lede">Our loaves take about 36 hours from flour to crust. Your order on Thursday tells us how much dough to mix on Friday morning, so we bake what’s wanted and very little goes to waste.</p>
+    <ol class="steps">
+      <li><time>Thu 20:00</time><h3>Orders close</h3><p class="you">Your reservation sets the dough weights.</p></li>
+      <li><time>Fri 07:00</time><h3>Levain and mix</h3><p>Starter fed, flour from Gilchester’s milled in Northumberland.</p></li>
+      <li><time>Fri 18:00</time><h3>Shape and cold proof</h3><p>Into baskets and the retarder overnight at 4°C.</p></li>
+      <li><time>Sat 04:30</time><h3>Into the deck oven</h3><p>Four loads, hottest first for baguettes, rye last.</p></li>
+      <li><time>Sat 08:00</time><h3>Collect yours</h3><p>Bagged with your name, cool enough to slice by lunch.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="find" id="find" aria-labelledby="findTitle">
+  <div class="wrap">
+    <div>
+      <h2 id="findTitle">Find us</h2>
+      <address>14 Tollgate Road<br>Next to the launderette, opposite the bus stop<br>Open the side door if the front is queued</address>
+      <p style="margin-top:12px"><a style="display:inline-block;padding:10px 0" href="tel:+441632960418">01632 960418</a></p>
+    </div>
+    <div>
+      <h3>When we’re open</h3>
+      <table class="hours num">
+        <tbody>
+          <tr><td>Wed – Fri</td><td>07:30 – 14:00</td></tr>
+          <tr class="bake"><td>Saturday bake</td><td>08:00 – 14:00</td></tr>
+          <tr class="bake"><td>Sunday bake</td><td>09:00 – 13:00</td></tr>
+          <tr><td>Mon – Tue</td><td>Closed</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>No reservation?</h3>
+      <p>Come anyway. Whatever isn’t reserved goes on the walk-in shelf from opening until it’s gone, usually around 11 on Saturdays.</p>
+      <p>Weekday bread is a smaller bake: country loaf and focaccia only.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Tollgate Bakery, 14 Tollgate Road. Baking here since 2019.</span>
+    <span>Questions about allergens? Ask at the counter or call <a href="tel:+441632960418">01632 960418</a>.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  /* ---------- data ---------- */
+  var LOAVES = [
+    {id:"country", kind:"boule",    name:"Country loaf",       short:"Country loaf", price:5.20, desc:"White and wholemeal, 36-hour ferment, dark blistered crust. 900g.",
+      sat:{left:12, of:40}, sun:{left:21, of:30}},
+    {id:"seeded",  kind:"batard",   name:"Five-seed batard",   short:"Five-seed",    price:5.60, desc:"Sunflower, pumpkin, linseed, sesame and poppy through a soft crumb. 800g.",
+      sat:{left:5, of:24},  sun:{left:9, of:18}},
+    {id:"baguette",kind:"baguette", name:"Baguette",           short:"Baguette",     price:2.40, desc:"Thin crackling crust, baked last thing before we open. Best by lunch.",
+      sat:{left:14, of:30}, sun:null},
+    {id:"focaccia",kind:"focaccia", name:"Rosemary focaccia",  short:"Focaccia",     price:4.80, desc:"Olive oil, rosemary and flaky salt. A tray slab that feeds four.",
+      sat:{left:7, of:20},  sun:{left:12, of:16}},
+    {id:"rye",     kind:"rye",      name:"Rye and caraway tin",short:"Rye tin",      price:6.10, desc:"Dense, sour and keeps for a week. Slice thin. 1kg.",
+      sat:{left:0, of:12},  sun:{left:6, of:12}}
+  ];
+  var SLOTS = {sat:["08:00 – 10:00","10:00 – 12:00","12:00 – 14:00"], sun:["09:00 – 11:00","11:00 – 13:00"]};
+  var DAYNAME = {sat:"Saturday", sun:"Sunday"};
+  var state = {day:"sat", bag:{sat:{}, sun:{}}, done:null};
+
+  /* ---------- dates ---------- */
+  var MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function weekend(){
+    var now=new Date(), d=new Date(now);
+    d.setHours(0,0,0,0);
+    var add=(6-d.getDay()+7)%7; d.setDate(d.getDate()+add);           // next Saturday (today if Sat)
+    var close=new Date(d); close.setDate(d.getDate()-2); close.setHours(20,0,0,0);
+    if(now>close){ d.setDate(d.getDate()+7); close.setDate(close.getDate()+7); }
+    var sun=new Date(d); sun.setDate(d.getDate()+1);
+    return {sat:d, sun:sun, close:close, now:now};
+  }
+  var W=weekend();
+  function fmt(d){return d.getDate()+" "+MONTHS[d.getMonth()];}
+  function money(n){return "£"+n.toFixed(2);}
+  function deadlineText(){
+    var ms=W.close-new Date(); if(ms<0) ms=0;
+    var h=Math.floor(ms/36e5), d=Math.floor(h/24), hh=h%24;
+    var left = d>0 ? d+(d===1?" day ":" days ")+hh+"h" : hh+"h "+Math.floor(ms/6e4)%60+"m";
+    return "Orders close Thu 8pm · "+left+" left";
+  }
+
+  /* ---------- parametric loaves ---------- */
+  var T = {dark:"#6E3514", mid:"#A45C27", light:"#C98A4B", hi:"#EBC585", flour:"#F6F3EA", seed:"#E9D9B4", tin:"#5D6664", tinHi:"#8A9391", herb:"#56703F"};
+  var G = {dark:"#9AA3A0", mid:"#B9C0BD", light:"#CBD1CE", hi:"#DCE1DE", flour:"#E8ECE9", seed:"#D2D8D5", tin:"#8F9895", tinHi:"#A9B1AE", herb:"#A3ABA8"};
+  var uid=0;
+  function drawLoaf(kind, st, size){
+    var c = st==="out" ? G : T, big = size!=="sm", id="g"+(uid++), s="";
+    var grad='<defs><radialGradient id="'+id+'" cx="35%" cy="28%" r="80%"><stop offset="0" stop-color="'+c.light+'"/><stop offset=".55" stop-color="'+c.mid+'"/><stop offset="1" stop-color="'+c.dark+'"/></radialGradient></defs>';
+    var shadow='<ellipse cx="80" cy="97" rx="'+(kind==="baguette"?74:58)+'" ry="5" fill="rgba(40,25,10,.22)"/>';
+    function dust(n,x0,x1,y0,y1){ if(!big||st==="out") return ""; var r="",k; for(k=0;k<n;k++){ var x=x0+((k*37)%100)/100*(x1-x0), y=y0+((k*61)%100)/100*(y1-y0); r+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+(k%3?1:1.6)+'" fill="'+c.flour+'" opacity=".75"/>'; } return r; }
+    if(kind==="boule"){
+      s='<path d="M24 92 C18 60 44 30 80 30 C116 30 142 60 136 92 Z" fill="url(#'+id+')"/>'+
+        '<path d="M44 58 C58 50 72 60 80 44 C88 60 102 50 116 58" stroke="'+c.hi+'" stroke-width="'+(big?5:7)+'" fill="none" stroke-linecap="round"/>'+
+        '<path d="M80 44 C78 62 82 76 80 90" stroke="'+c.hi+'" stroke-width="'+(big?4:6)+'" fill="none" stroke-linecap="round" opacity=".85"/>'+
+        (big?'<path d="M34 76 C46 88 110 90 128 76" stroke="'+c.dark+'" stroke-width="3" fill="none" opacity=".35"/>':'')+dust(22,40,118,34,56);
+    } else if(kind==="batard"){
+      s='<path d="M10 90 C10 64 40 46 80 46 C124 46 150 64 150 90 Z" fill="url(#'+id+')"/>'+
+        '<path d="M30 76 C60 56 104 54 132 66" stroke="'+c.hi+'" stroke-width="'+(big?5:8)+'" fill="none" stroke-linecap="round"/>';
+      if(big){ for(var i=0;i<18;i++){ var sx=26+((i*53)%108), sy=58+((i*29)%26); s+='<ellipse cx="'+sx+'" cy="'+sy+'" rx="2.4" ry="1.3" transform="rotate('+(i*40)+' '+sx+' '+sy+')" fill="'+c.seed+'"/>'; } }
+    } else if(kind==="baguette"){
+      s='<rect x="4" y="68" width="152" height="24" rx="12" fill="url(#'+id+')"/>';
+      for(var j=0;j<5;j++){ var x=22+j*27; s+='<path d="M'+x+' 84 C'+(x+6)+' 74 '+(x+14)+' 71 '+(x+22)+' 72" stroke="'+c.hi+'" stroke-width="'+(big?4:6)+'" fill="none" stroke-linecap="round"/>'; }
+    } else if(kind==="focaccia"){
+      s='<rect x="12" y="66" width="136" height="26" rx="7" fill="'+c.dark+'"/>'+
+        '<rect x="12" y="62" width="136" height="22" rx="7" fill="url(#'+id+')"/>';
+      if(big){ for(var k=0;k<14;k++){ var fx=24+(k%7)*18+(k>6?9:0), fy=k>6?77:69; s+='<ellipse cx="'+fx+'" cy="'+fy+'" rx="3.4" ry="2" fill="'+c.dark+'" opacity=".55"/>'; }
+        for(var m=0;m<5;m++){ var hx=30+m*25, hy=70+(m%2)*6; s+='<path d="M'+hx+' '+hy+' l9 -3" stroke="'+c.herb+'" stroke-width="2.4" stroke-linecap="round"/><path d="M'+(hx+2)+' '+(hy+1)+' l3 -5 M'+(hx+6)+' '+(hy-1)+' l3 -5" stroke="'+c.herb+'" stroke-width="1.6" stroke-linecap="round"/>'; } }
+      else { s+='<path d="M30 72 l12 -3 M70 76 l12 -3 M108 71 l12 -3" stroke="'+c.herb+'" stroke-width="4" stroke-linecap="round"/>'; }
+    } else if(kind==="rye"){
+      s='<path d="M36 50 C36 30 124 30 124 50 Z" fill="'+(st==="out"?c.dark:"#5A2E14")+'"/>'+
+        '<path d="M30 50 H130 L124 92 H36 Z" fill="'+c.tin+'"/>'+
+        '<path d="M30 50 H130 L129 57 H31 Z" fill="'+c.tinHi+'"/>';
+      if(big){ for(var q=0;q<14;q++){ var rx=48+((q*41)%66), ry=37+((q*23)%11); s+='<ellipse cx="'+rx+'" cy="'+ry+'" rx="2" ry=".9" transform="rotate('+(q*25-30)+' '+rx+' '+ry+')" fill="'+c.seed+'" opacity=".8"/>'; }
+        s+='<path d="M44 62 V86" stroke="rgba(255,255,255,.18)" stroke-width="4" stroke-linecap="round"/>'; }
+    }
+    return '<svg viewBox="10 26 140 78" role="img" aria-hidden="true">'+grad+shadow+'<g class="loaf">'+s+'</g></svg>';
+  }
+
+  /* ---------- helpers ---------- */
+  function stockFor(l,day){ return l[day]; }
+  function inBag(id,day){ return state.bag[day][id]||0; }
+  function avail(l,day){ var s=stockFor(l,day); return s ? s.left-inBag(l.id,day) : 0; }
+  function stateOf(l,day){ var s=stockFor(l,day); if(!s) return "none"; var a=avail(l,day); if(s.left===0) return "out"; if(a<=5) return "low"; return "ok"; }
+  var $=function(id){return document.getElementById(id);};
+
+  function addBtn(l,day,a){ var q=inBag(l.id,day);
+    return '<button type="button" class="add" data-add="'+l.id+'" aria-pressed="'+(q>0)+'" aria-label="Add a '+l.name+' to your bag"'+(a<=0?" disabled":"")+'>'+(q>0?q+" in bag · +1":"+ Add")+'</button>'; }
+  /* ---------- hero board ---------- */
+  function renderBoard(anim){
+    var day=state.day, html="", total=0, of=0;
+    LOAVES.forEach(function(l){
+      var s=stockFor(l,day); if(!s) return;
+      var a=avail(l,day), st=stateOf(l,day); total+=Math.max(a,0); of+=s.of;
+      html+='<figure class="'+st+'">'+drawLoaf(l.kind, st, "lg")+'<figcaption><span class="lname">'+l.short+'</span>'+
+        (st==="out"?'<span class="left">Sold out</span>':'<span class="left num" data-id="'+l.id+'">'+a+'<small>left</small></span>'+addBtn(l,day,a))+'</figcaption></figure>';
+    });
+    var shelf=$("shelf"); shelf.innerHTML=html;
+    if(!anim) shelf.classList.remove("rising");
+    $("leftTotal").textContent=total;
+    $("heroDay").textContent=DAYNAME[day]; $("ctaDay").textContent=DAYNAME[day];
+    $("boardDate").textContent=DAYNAME[day]+" "+fmt(W[day]).replace(" "," ");
+    $("boardOf").textContent=total+" of "+of+" still free";
+    requestAnimationFrame(placePlank);
+  }
+  function placePlank(){
+    var svg=document.querySelector("#shelf svg"); if(!svg) return;
+    var board=document.querySelector(".board"), br=board.getBoundingClientRect(), sr=svg.getBoundingClientRect();
+    var y = sr.top - br.top + sr.height*0.86;
+    document.querySelector(".plank").style.top = y+"px";
+  }
+  window.addEventListener("resize", placePlank);
+
+  /* ---------- order list ---------- */
+  function renderList(){
+    var day=state.day, html="";
+    LOAVES.forEach(function(l){
+      var s=stockFor(l,day), st=stateOf(l,day), q=inBag(l.id,day), a=avail(l,day);
+      var ctl, stock;
+      if(!s){ ctl='<p class="na">Not baked on Sundays</p>'; stock='<div class="stock">Saturdays only</div>'; }
+      else if(st==="out"){ ctl='<p class="na">All reserved. Try Sunday.</p>'; stock='<div class="stock"><span class="bar"><i style="width:0"></i></span><span>0 of '+s.of+' left</span></div>'; }
+      else {
+        ctl='<div class="stepper" role="group" aria-label="'+l.name+' quantity">'+
+            '<button type="button" data-act="dec" data-id="'+l.id+'" aria-label="One fewer '+l.name+'"'+(q===0?" disabled":"")+'>−</button>'+
+            '<output aria-live="polite">'+q+'</output>'+
+            '<button type="button" data-act="inc" data-id="'+l.id+'" aria-label="Add a '+l.name+'"'+(a<=0?" disabled":"")+'>+</button></div>';
+        stock='<div class="stock"><span class="bar" aria-hidden="true"><i style="width:'+(Math.max(a,0)/s.of*100).toFixed(1)+'%"></i></span><span><b class="num">'+a+'</b> of '+s.of+' left</span></div>';
+      }
+      html+='<li class="row '+(s?st:"out")+'"><div class="pic">'+drawLoaf(l.kind, s&&st!=="out"?"ok":"out","sm")+'</div>'+
+        '<div><h3>'+l.name+'<span class="price num">'+money(l.price)+'</span></h3><p class="desc">'+l.desc+'</p>'+stock+'</div>'+
+        '<div class="ctl">'+ctl+'</div></li>';
+    });
+    $("loaves").innerHTML=html;
+  }
+
+  /* ---------- bag ---------- */
+  function renderBag(droppedId){
+    var day=state.day, items="", total=0, count=0;
+    LOAVES.forEach(function(l){ var q=inBag(l.id,day); if(!q) return; total+=q*l.price; count+=q;
+      items+='<li'+(l.id===droppedId?' class="drop"':'')+'>'+drawLoaf(l.kind,"ok","sm")+'<span>'+q+' × '+l.name+'</span><b class="num">'+money(q*l.price)+'</b></li>'; });
+    $("bagItems").innerHTML = items || '<li class="bag-empty" style="border:0">Nothing yet. Use + on a loaf to add it.</li>';
+    $("total").textContent=money(total);
+    $("bagFor").textContent="For "+DAYNAME[day]+" "+fmt(W[day]).replace(" "," ")+(count?" · "+count+(count===1?" item":" items"):"");
+    var sel=$("slot"), cur=sel.value; sel.innerHTML=SLOTS[day].map(function(t){return '<option>'+t+'</option>';}).join("");
+    if(SLOTS[day].indexOf(cur)>-1) sel.value=cur;
+  }
+
+  function renderAll(anim, dropped){ renderBoard(anim); renderList(); if(!state.done) renderBag(dropped); }
+
+  /* ---------- events ---------- */
+  document.querySelector(".days").addEventListener("click", function(e){
+    var b=e.target.closest("button"); if(!b) return;
+    state.day=b.dataset.day;
+    document.querySelectorAll(".days button").forEach(function(x){x.setAttribute("aria-pressed", String(x===b));});
+    if(state.done){ state.done=null; restoreForm(); }
+    $("shelf").classList.add("rising"); renderAll(true);
+  });
+  $("loaves").addEventListener("click", function(e){
+    var b=e.target.closest("button[data-act]"); if(!b||b.disabled) return;
+    var id=b.dataset.id, day=state.day, l=LOAVES.filter(function(x){return x.id===id;})[0];
+    var q=inBag(id,day);
+    if(b.dataset.act==="inc" && avail(l,day)>0) q++; else if(b.dataset.act==="dec" && q>0) q--; else return;
+    state.bag[day][id]=q;
+    if(state.done){ state.done=null; restoreForm(); }
+    var act=b.dataset.act;
+    renderAll(false, act==="inc"?id:null);
+    var el=document.querySelector('.shelf .left[data-id="'+id+'"]'); if(el) el.classList.add("tick");
+    var nb=document.querySelector('button[data-act="'+act+'"][data-id="'+id+'"]'); if(nb&&!nb.disabled) nb.focus();
+    $("err").hidden=true;
+  });
+
+  $("shelf").addEventListener("click", function(e){
+    var b=e.target.closest("button[data-add]"); if(!b||b.disabled) return;
+    var id=b.dataset.add, day=state.day, l=LOAVES.filter(function(x){return x.id===id;})[0];
+    if(avail(l,day)<=0) return;
+    state.bag[day][id]=inBag(id,day)+1;
+    if(state.done){ state.done=null; restoreForm(); }
+    renderAll(false,id);
+    var el=document.querySelector('.shelf .left[data-id="'+id+'"]'); if(el) el.classList.add("tick");
+    var nb=document.querySelector('button[data-add="'+id+'"]'); if(nb) nb.focus();
+  });
+  var formHTML=$("bagForm").innerHTML;
+  function restoreForm(){ $("bagForm").innerHTML=formHTML; bindForm(); renderBag(); }
+  function bindForm(){
+    $("form").addEventListener("submit", function(e){
+      e.preventDefault();
+      var day=state.day, n=0; LOAVES.forEach(function(l){n+=inBag(l.id,day);});
+      var name=$("name").value.trim(), phone=$("phone").value.replace(/[^\d+]/g,"");
+      ["fName","fPhone"].forEach(function(f){$(f).classList.remove("bad");});
+      var msgs=[];
+      if(!n) msgs.push("Your bag is empty. Add at least one loaf above.");
+      if(!name){ msgs.push("Add a name so we can label your bag."); $("fName").classList.add("bad"); }
+      if(phone.replace(/\D/g,"").length<10){ msgs.push("That mobile number looks short. We need it for Friday’s confirmation text."); $("fPhone").classList.add("bad"); }
+      if(msgs.length){ var er=$("err"); er.textContent=msgs.join(" "); er.hidden=false; return; }
+      // commit: reserved loaves leave the public count
+      var lines=[], total=0;
+      LOAVES.forEach(function(l){ var q=inBag(l.id,day); if(!q) return; l[day].left-=q; total+=q*l.price; lines.push(q+" × "+l.name); });
+      var ref="TG-"+String(W[day].getDate()).padStart(2,"0")+"-"+(Math.floor(Math.random()*900)+100);
+      var slot=$("slot").value;
+      state.bag[day]={}; state.done=true;
+      $("bagForm").innerHTML='<div class="done"><h3>Set aside for '+name.split(" ")[0].replace(/[<>&"]/g,"")+'.</h3>'+
+        '<span class="ref">'+ref+'</span><ul>'+lines.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ul>'+
+        '<p>Collect on <strong>'+DAYNAME[day]+' '+fmt(W[day])+', '+slot.replace(/ – /,"–")+'</strong>. Pay <strong class="num">'+money(total)+'</strong> at the counter.</p>'+
+        '<p style="font-size:13px;color:var(--ink-soft)">We’ll text '+phone.replace(/[<>&"]/g,"")+' on Friday to confirm.</p>'+
+        '<button type="button" class="linkbtn" id="again">Reserve more bread</button></div>';
+      $("again").addEventListener("click", function(){ state.done=null; restoreForm(); $("name").focus(); });
+      $("bagFor").textContent="Reserved · "+DAYNAME[day]+" "+fmt(W[day]).replace(" "," ");
+      renderBoard(false); renderList();
+    });
+  }
+  bindForm();
+
+  /* ---------- init ---------- */
+  $("satDate").textContent=" "+fmt(W.sat); $("sunDate").textContent=" "+fmt(W.sun);
+  function tickDeadline(){ $("deadlinePill").querySelector(".long").textContent=deadlineText(); }
+  tickDeadline(); setInterval(tickDeadline, 60000);
+  renderAll(true);
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(placePlank);
+})();
+</script>
+</body>
+</html>

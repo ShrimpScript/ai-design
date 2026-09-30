@@ -97,7 +97,7 @@ It respects `robots.txt` (RFC 9309 matching), dismisses cookie banners with "rej
 
 It **stacks** with the others: `frontend-design`'s taste principles and `impeccable`'s commands both work on top of a recon-grounded brief. This skill adds the evidence and the verification.
 
-**Head-to-head** (same prompt, blind judges, n = 1 per skill): after adding the craft layer, all 4 judges preferred design-recon's app (8 vs 6 overall, 9 vs 5 distinctiveness), with 0 serious accessibility issues vs 8. It costs more: ~4× the time and ~2× the tokens. See `examples/benchmark/README.md`.
+**Head-to-head** (blind judges, n = 1 per skill per prompt): with the craft layer, design-recon won 8 of 8 judge votes across two prompts. On a houseplant app it scored 8 vs 6 overall (9 vs 5 distinctiveness). On a bakery landing page it scored 8 vs 7. It also had fewer accessibility failures (0 vs 8, and 1 vs 3). It costs more: 2.6–4.3× the time and ~2× the tokens. See `examples/benchmark/README.md`.
 
 **Token budget:** the model reads digests (~1k tokens per site), one board image, and one contact sheet per build round, never raw HTML or individual frames.
 

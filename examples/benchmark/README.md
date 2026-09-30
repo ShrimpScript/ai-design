@@ -78,8 +78,38 @@ The same prompt was sent to a fresh agent with the updated skill (`A2/`, commit 
   All three are now guardrails in `craft.md`.
 - A first attempt at judges 3–4 accidentally reused stale screenshots from the old round. It was discarded and re-run with the correct images.
 
+## Round 2: a different prompt (landing page), both skills run fresh and in parallel
+**Prompt:** "Build a landing page for a neighbourhood bakery that takes pre-orders for weekend bread." It uses the same template as round 1. `C/` = design-recon (craft layer included), `D/` = frontend-design. Both were launched at the same moment.
+| | C: design-recon | D: frontend-design |
+|---|---|---|
+| Wall time | 392.1 s | 148.5 s |
+| Tokens | 107,059 | 60,198 |
+| Tool calls | 19 | 5 |
+| axe serious | **1** (contrast) | 3 (contrast) |
+| Pre-order form submits and confirms | ✔ | ✔ |
+| Console errors / mobile overflow | 0 / 0 px | 0 / 0 px |
+
+**Blind judges** (4, counterbalanced; `eval2.json`, `shots/C-*`, `shots/D-*`):
+| Judge | C overall | D overall | C distinct. | D distinct. | C clarity | D clarity | C mobile | D mobile | Ships |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 (C = X) | **8** | 7 | 8 | 7 | 9 | 8 | 8 | 7 | C |
+| 2 (C = Y) | **8** | 7 | 8 | 6 | 8 | 8 | 7 | 6 | C |
+| 3 (C = X) | **8** | 7 | 8 | 6 | 9 | 8 | 7 | 6 | C |
+| 4 (C = Y) | **8** | 7 | 8 | 7 | 9 | 8 | 8 | 7 | C |
+
+- **Why C won:** its hero is live data. "38 loaves left for Saturday." sits above a bake board of drawn loaves, each with a count and an Add button, so scarcity and the action are visible without scrolling. A real bake timeline explains the Thursday cutoff.
+- **D's strengths:** a warm serif and a confident blue order band.
+- **D's weaknesses:** a stock hero (headline plus one clip-art loaf), a numbered 3-step section and an FAQ read as a template, and on phones the loaf pushes the offer down.
+- **The margin is narrower than round 1 (8 vs 7).**
+- **C's weaknesses:**
+  - The palette is cool and clinical for a bakery (2 judges).
+  - Display and sans section headings are mixed (2).
+  - On mobile the bag comes after the whole list (2).
+  - The hero's loaves repeat the list below.
+  All four became guardrails in `craft.md`.
+
 ## Limitations (read before quoting)
-- **n = 1 run per skill, one prompt.** The outputs vary run to run. This is an indication, not a statistically meaningful result.
+- **n = 1 run per skill per prompt (2 prompts).** The outputs vary run to run. This is an indication, not a statistically meaningful result.
 - **Judges are LLMs** from the same model family as the builders, seeing screenshots only (no interaction). Human judges would be better.
 - **The home-team metrics** (`slop-lint`, `palette`, `shoot`) favour A, since A runs them on itself. They're listed only below and weren't used in the verdict: A lint 100 / palette clean / 4 type sizes. B lint 100 / palette: 2 muddy earth tones and a vibrating blue–amber pair / radius sprawl.
 - The original A/B used the skill **before** the fixes above. The A2 rerun used them, but B was not re-run.

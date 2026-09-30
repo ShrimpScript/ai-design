@@ -12,7 +12,11 @@
 **Guardrails (from blind judging):**
 - **The visual never costs the task.** On a 390px screen, the key line, the signature visual and the first actionable item all fit in the first screen. Make a compact phone version of the visual (the 3 most urgent objects, ≤ 35% of the screen height, no sideways-scrolling hero). `shoot.mjs` flags `TASK BELOW FOLD`.
 - **Every encoding reads without a legend, or it carries a label.** A bar or fill needs its meaning in words nearby ("water left", "3 of 7 days"), and colour and length must not contradict each other.
-- **The display face is for the key line, numbers and object names.** Section headings and controls use the text face. Heavy display type on every heading reads as loud.
+- **The display face is for the key line, numbers and object names.** Heavy display type on every heading reads as loud (round 1).
+- **One face per heading level, applied everywhere.** Mixing a display H2 in one section and a sans H2 in the next reads as "two systems" (round 2). Pick a level (e.g. H1 and H2 display, H3 and below text) and never break it.
+- **Keep the subject's temperature.** Avoiding the cream + clay cliché must not produce a clinical palette. A bakery in grey-teal read as "cold" to 2 of 4 judges. Choose a *different* warm family (crust browns, rye, wheat, butter) rather than a cool one.
+- **On phones, the commit step follows the user.** When a list feeds a bag, cart or form, show a sticky summary bar ("3 loaves · £13.20 · Reserve") instead of placing the form after the whole list.
+- **The hero visual doesn't duplicate the section below.** If the hero shows the items, the list below adds detail (or the hero *is* the list).
 
 ## Choosing the signature medium
 | Medium | Best for | Cost and rules |
