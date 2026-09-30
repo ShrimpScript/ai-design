@@ -7,3 +7,10 @@
 shots/home/
 [AC]*/.claude/
 [BD]/.claude/
+[EF]/.claude/
+*/app/dist/
+[E]/.design/recon/*/*.jpg
+![E]/.design/recon/*/sheet.jpg
+[E]/.design/recon/*/svg/
+[E]/.design/shots/*/*.jpg
+![E]/.design/shots/*/sheet.jpg
