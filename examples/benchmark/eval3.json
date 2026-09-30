@@ -1,0 +1,291 @@
+{
+ "E": {
+  "distBytes": 1033081,
+  "js": {
+   "Customers-DP6uUV_w.js": 9953,
+   "Demo-D64mwcz3.js": 13178,
+   "HowItWorks-CUjX19Bp.js": 18031,
+   "NotFound-Cfgjau0r.js": 714,
+   "Pricing-C5i6Boby.js": 8292,
+   "Product--7pnqAcv.js": 12489,
+   "Segmented-CIuSIaBb.js": 1063,
+   "StormStory-BIQ6x4wJ.js": 4741,
+   "index-BMLILfHt.css": 46273,
+   "index-CTYPFg91.js": 474094,
+   "jsx-runtime-Dk72oS4N.js": 8774
+  },
+  "pages": {
+   "#/": {
+    "axe": {
+     "serious": 0,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [],
+    "h1": 1
+   },
+   "#/product": {
+    "axe": {
+     "serious": 0,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [],
+    "h1": 1
+   },
+   "#/how-it-works": {
+    "axe": {
+     "serious": 15,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [
+     "color-contrast(s×15)"
+    ],
+    "h1": 1
+   },
+   "#/customers": {
+    "axe": {
+     "serious": 15,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [
+     "color-contrast(s×15)"
+    ],
+    "h1": 1
+   },
+   "#/pricing": {
+    "axe": {
+     "serious": 0,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [],
+    "h1": 1
+   },
+   "#/demo": {
+    "axe": {
+     "serious": 0,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [],
+    "h1": 1
+   },
+   "#/product#forecast": {
+    "axe": {
+     "serious": 0,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [],
+    "h1": 1
+   },
+   "#/product#alerts": {
+    "axe": {
+     "serious": 0,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [],
+    "h1": 1
+   },
+   "#/product#api": {
+    "axe": {
+     "serious": 0,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [],
+    "h1": 1
+   },
+   "#/how-it-works#verification": {
+    "axe": {
+     "serious": 15,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [
+     "color-contrast(s×15)"
+    ],
+    "h1": 1
+   }
+  },
+  "routes": [
+   "#/",
+   "#/product",
+   "#/how-it-works",
+   "#/customers",
+   "#/pricing",
+   "#/demo",
+   "#/product#forecast",
+   "#/product#alerts",
+   "#/product#api",
+   "#/how-it-works#verification"
+  ],
+  "homeCLS": 0.014,
+  "runningAnimations": 0,
+  "form": {
+   "form": true,
+   "showsErrorsOnEmpty": true,
+   "success": true
+  },
+  "consoleErrors": [],
+  "mobileOverflow": {
+   "#/": 0,
+   "#/product": 0,
+   "#/how-it-works": 0,
+   "#/customers": 0,
+   "#/pricing": 0,
+   "#/demo": 0,
+   "#/product#forecast": 0,
+   "#/product#alerts": 0,
+   "#/product#api": 0,
+   "#/how-it-works#verification": 0
+  },
+  "mobileMenu": {
+   "opens": true
+  },
+  "reducedMotion": {
+   "runningAnimations": 0,
+   "heroStillChanging": false
+  }
+ },
+ "F": {
+  "distBytes": 759859,
+  "js": {
+   "Customers-DYMkVVmG.js": 9469,
+   "Customers-Dg-A3z1x.css": 4620,
+   "Demo-BZ2Ep_KG.js": 10502,
+   "Demo-Cy6uhV0i.css": 3926,
+   "DepthLegend-1MW-xjcd.js": 9420,
+   "DepthLegend-UXXkQjm1.css": 704,
+   "Home-BA9w_PB_.css": 5996,
+   "Home-BT-bL8R5.js": 14316,
+   "HowItWorks-DRSgka0R.css": 3646,
+   "HowItWorks-Dr42pyDT.js": 14798,
+   "Pricing-CO4Z1lUo.js": 7549,
+   "Pricing-CPhWTxX3.css": 3853,
+   "Product-Bo3mWwtz.js": 13866,
+   "Product-CddIberu.css": 4183,
+   "city-BhJ0whX5.js": 6589,
+   "index-CdFM1fkc.css": 17107,
+   "index-Dp2YDaxc.js": 94239,
+   "pages-C5vy4ffF.js": 794,
+   "pages-DYHdu0hz.css": 6759,
+   "react-Bp10OJQT.js": 315247
+  },
+  "pages": {
+   "#/": {
+    "axe": {
+     "serious": 13,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [
+     "color-contrast(s×13)"
+    ],
+    "h1": 1
+   },
+   "#/product": {
+    "axe": {
+     "serious": 1,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [
+     "color-contrast(s×1)"
+    ],
+    "h1": 1
+   },
+   "#/how-it-works": {
+    "axe": {
+     "serious": 15,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [
+     "color-contrast(s×15)"
+    ],
+    "h1": 1
+   },
+   "#/customers": {
+    "axe": {
+     "serious": 6,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [
+     "color-contrast(s×6)"
+    ],
+    "h1": 1
+   },
+   "#/pricing": {
+    "axe": {
+     "serious": 0,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [],
+    "h1": 1
+   },
+   "#/demo": {
+    "axe": {
+     "serious": 0,
+     "critical": 0,
+     "moderate": 0,
+     "minor": 0
+    },
+    "rules": [],
+    "h1": 1
+   }
+  },
+  "routes": [
+   "#/",
+   "#/product",
+   "#/how-it-works",
+   "#/customers",
+   "#/pricing",
+   "#/demo"
+  ],
+  "homeCLS": 0.001,
+  "runningAnimations": 0,
+  "form": {
+   "form": true,
+   "showsErrorsOnEmpty": true,
+   "success": true
+  },
+  "consoleErrors": [],
+  "mobileOverflow": {
+   "#/": 0,
+   "#/product": 0,
+   "#/how-it-works": 0,
+   "#/customers": 0,
+   "#/pricing": 0,
+   "#/demo": 0
+  },
+  "mobileMenu": {
+   "opens": true
+  },
+  "reducedMotion": {
+   "runningAnimations": 0,
+   "heroStillChanging": false
+  }
+ }
+}
