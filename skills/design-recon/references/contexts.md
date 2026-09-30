@@ -3,7 +3,7 @@
 Read only the section for this brief.
 
 ## A. Product / SaaS app (people use it repeatedly)
-**Goal:** speed of the core task and legibility at a glance. Brand is a seasoning, not the meal.
+**Goal:** speed of the core task and legibility at a glance, with a crafted first screen (`craft.md`). Brand chrome stays quiet; the craft layer does not.
 - **Lead with the work object**, not a greeting or KPI cards. A scheduler opens on the schedule, a CRM on the pipeline, an editor on the document.
 - **Density follows frequency.** Daily tools: 13–14px UI text, 28–32px controls, 4px base grid, tables. Occasional tools: 15–16px, more guidance.
 - **Numbers live in context.** Put the labour cost in the day's column header, not in a "Total Cost" card with an icon and a "+12%" pill.
@@ -12,8 +12,12 @@ Read only the section for this brief.
 - **First load shows the product working:** labelled example data ("Example plants — clear"), never an empty screen that explains what the app would do.
 - **States are the design.** Empty (it teaches the first action), loading (skeleton matching the final layout), error (what happened and the fix), partial, no-permission, long names, 0 / 1 / 1,000 items.
 - **Keyboard:** visible focus, a logical tab order, Esc closes, Enter confirms, and shortcuts for power actions.
-- **Motion** is 100–200ms and functional: it shows where something went or what changed. No entrance choreography.
-- **Distinctive even when utilitarian:** a blind A/B showed that a usable but plain app loses to a characterful one on first impression. Put at least one **subject-derived visual device** on the main screen (water level shown as a pot's fill, a plant tag shape, the ticket from a kitchen rail), and take the accent from the subject, not the framework blue (`palette.mjs` flags `default-blue`).
+- **Motion** is 100–200ms for controls and functional: it shows where something went or what changed. The exception is the object graphics, which react to actions (300–500ms or a spring). No entrance choreography on every section.
+- **Distinctive even when utilitarian:** a blind A/B showed that a usable but plain app loses to a characterful one on first impression. Required:
+  - a display-face key line;
+  - a **signature visual** that shows state (a 3D or illustrated hero object for the most urgent item, the water level as a pot's fill);
+  - **drawn item graphics** per object, from `draw(kind, state)`, not a generic icon (`craft.md`);
+  - an accent taken from the subject, not the framework blue (`palette.mjs` flags `default-blue`).
 - **Where brand shows:** the type choice, the one accent, iconography style, empty-state illustrations or copy, the logo mark, and the loading moment.
 - **Recon targets:** the product's public screens (docs screenshots, changelog, templates gallery, help centre), pricing and signup flows, and public design systems (Primer, Polaris, Carbon, Atlassian, Radix, GOV.UK) for component anatomy.
 - **Slop to avoid in apps:** "Welcome back, Name 👋"; four identical stat cards; sidebar icons in coloured tiles; gradient area charts; avatar stacks; everything in cards; charts nobody asked for.

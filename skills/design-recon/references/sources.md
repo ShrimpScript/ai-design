@@ -6,7 +6,7 @@ Use galleries to **discover** sites (WebSearch/WebFetch). Then run `recon.mjs` o
 1. **User's picks** (always first).
 2. **1–2 direct competitors**, measured so you can be *different* where it matters and conventional where users expect it.
 3. **1–2 adjacent-world references**: from the subject's physical or cultural world (for a restaurant tool: a menu printer, a kitchen-equipment maker, a food magazine). This is the strongest antidote to slop.
-4. **1 craft reference** for the hardest part (tables, motion, onboarding, editorial type).
+4. **1 craft reference** (required, even in Quick mode) for the signature visual or the hardest part: an illustrated app, a 3D product hero, editorial type, motion. Record *technique* lines (`craft.md` § Recon).
 
 ## Discovery by need
 | Need | Where |

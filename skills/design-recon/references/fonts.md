@@ -1,14 +1,29 @@
 # Fonts
 
 ## House preference (default; the brief can override)
-**Round, open, regular-width faces at comfortable weights.** Prefer round bowls, open apertures, soft or rounded terminals, and a generous x-height. Avoid squished type (condensed or narrow families, `wdth` < 95, tracking tighter than −0.025em) and extremely thin weights (< 300 for text, < 300 for display below 48px). `slop-lint` (`condensed-font`, `squished-type`, `thin-type`) and `shoot` enforce this; `specimen` and `brandboard` mark round faces `ROUND ✓`.
+**Round, open, regular-width faces at comfortable weights for UI and text, paired with a display face that has character** (§ Pairing). A single round sans on everything reads as a template: a blind judge called it "a Google-Sans-style template". Prefer round bowls, open apertures, soft or rounded terminals, and a generous x-height. Avoid squished type (condensed or narrow families, `wdth` < 95, tracking tighter than −0.025em) and extremely thin weights (< 300 for text, < 300 for display below 48px). `slop-lint` (`condensed-font`, `squished-type`, `thin-type`) and `shoot` enforce this; `specimen` and `brandboard` mark round faces `ROUND ✓`.
 - **Round candidates (Google Fonts, verified). Rotate: a house favourite used everywhere becomes the next AI tell** (a blind judge called a Google Sans Flex UI "a Google-Sans-style template"). Specimen at least 3, and never reuse the face from `.design/log.md`'s last project: Google Sans Flex (has a `ROND` roundness axis 0–100 plus `opsz`/`wdth`/`wght`; load it with `family=Google+Sans+Flex:opsz,wdth,wght,ROND@6..144,25..151,100..1000,0..100`), Google Sans, Parkinsans, Gabarito, Rubik, Readex Pro, Varela Round, M PLUS Rounded 1c, Zen Maru Gothic, Red Hat Display/Text, Be Vietnam Pro, Commissioner, Kumbh Sans, Afacad, SUSE, Onest, Albert Sans, Golos Text, Wix Madefor, Rethink Sans, Funnel Sans/Display, Jost, League Spartan.
 - **Backups, in order:** (1) Google's own families: Google Sans Flex, Google Sans, Google Sans Code for mono. (2) Anthropic-style: Anthropic's brand faces (the Styrene/Tiempos pairing and its custom Anthropic Sans/Serif) are proprietary, so use free equivalents: Albert Sans or Rethink Sans for the sans, Source Serif 4 or Newsreader for the serif. (3) The round list above.
 - Round faces that are **also** AI-default (Nunito, Poppins, Manrope, DM Sans, Outfit, Sora, Urbanist, Lexend, Figtree) still need a stated reason.
 
+## Pairing (display voice + UI text)
+The display face gives the product its voice (the key line, big numbers, item names). The text face does the work. They must differ clearly: soft serif + round sans, or wide display + regular text. "Soft" display faces (rounded serifs, ball terminals, soft wedges) satisfy the round preference at large sizes.
+| Display (character, soft) | Pairs with (round/open UI) | Mood |
+|---|---|---|
+| Young Serif | Schibsted Grotesk, Rethink Sans | Warm, botanical, homely |
+| Caprasimo (heavy, soft) | Onest, Albert Sans | Friendly, confident, food/retail |
+| Corben (round serif) | Golos Text, Hanken Grotesk | Gentle, crafty, hobby |
+| Gloock | Hanken Grotesk, Public Sans | Editorial, premium |
+| Hedvig Letters Serif | Hedvig Letters Sans | Calm, a matched superfamily |
+| Gabarito 800 / Parkinsans 700 | the same family at 400 | Round geometric, one-family range |
+| Google Sans Flex (`ROND` 100, `opsz` 144, `wght` 750) | the same family (`ROND` 0, `opsz` 14) | One-family extremes; don't use it plain |
+| Funnel Display | Funnel Sans | Modern product, soft grotesque |
+| Bodoni Moda (≥ 48px only) | Albert Sans | Luxury, fashion |
+Rotate: log the pair in `.design/log.md` and don't reuse it on the next project. Fraunces and Instrument Serif are saturated; use them only with a reason.
+
 ## Choosing (in this order)
 1. **The job:** dense UI (tall x-height, tabular figures, clear 1/l/I), long reading (a text cut, comfortable spacing), display identity (character at large sizes), code or data (a monospace, only where alignment matters).
-2. **One family with range** (weights plus a width or optical-size axis) beats two faces fighting. If you use two, make them clearly different.
+2. **Display + text** (§ Pairing), or one family used at its extremes. Two similar sans faces fighting is worse than either.
 3. **Check the details:** `tabular-nums`, language coverage, a real italic, and variable axes. Look at it at real size before committing.
 4. **Scale:** ratio 1.2 for apps, 1.25–1.333 for marketing, ≤ 7 sizes. Tighten display tracking (-0.01 to -0.03em), and use line-height ~1.05–1.15 for display, 1.4–1.6 for text.
 

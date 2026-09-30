@@ -93,6 +93,30 @@ function audit() {
   };
 }
 
+// Craft probe (first viewport only): is there type used as image and a drawn subject, or just UI chrome?
+function craft() {
+  const vh = innerHeight, vw = innerWidth, inView = (r) => r.bottom > 0 && r.top < vh && r.width > 0 && r.height > 0;
+  const len = {}, fam = {}; let max = 0, maxFam = '';
+  for (const el of document.querySelectorAll('body *')) {
+    const t = [...el.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent.trim()).join('');
+    if (!t) continue; const r = el.getBoundingClientRect(); if (!inView(r)) continue;
+    const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || +cs.opacity === 0) continue;
+    const fs = parseFloat(cs.fontSize), f = cs.fontFamily.split(',')[0].replace(/["']/g, '').trim();
+    len[fs] = (len[fs] || 0) + t.length; fam[f] = (fam[f] || 0) + t.length;
+    if (fs > max) { max = fs; maxFam = f; }
+  }
+  const body = +Object.entries(len).sort((a, b) => b[1] - a[1])[0]?.[0] || 16;
+  let area = 0, items = 0;
+  for (const el of document.querySelectorAll('svg, canvas, img, video, picture, [data-visual]')) {
+    if (el.parentElement?.closest('svg')) continue;
+    const r = el.getBoundingClientRect(); if (!inView(r)) continue;
+    const m = Math.min(r.width, r.height);
+    if (m >= 28 && !el.closest('button,a,label')) items++;
+    if (m >= 64) area += Math.min(r.width, vw) * Math.min(r.height, vh);
+  }
+  return { families: Object.keys(fam), ratio: +(max / body).toFixed(1), body, max, maxFam, visual: Math.round(100 * area / (vw * vh)), items };
+}
+
 const browser = await launch();
 const errors = [], lines = [], sheet = [];
 let first;
@@ -103,6 +127,7 @@ for (const w of widths) {
   await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 }).catch(e => errors.push(e.message.split('\n')[0]));
   await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(400);
   if (CLICK) { await page.getByText(CLICK, { exact: false }).first().click({ timeout: 3000 }).catch(() => errors.push(`--click "${CLICK}" not found`)); await page.waitForTimeout(500); }
+  const c = await page.evaluate(craft);
   const a = await page.evaluate(audit);
   const p = path.join(dir, `${w}.jpg`);
   await shotCapped(page, p, w < 600 ? 5000 : 4000, 75);
@@ -112,6 +137,10 @@ for (const w of widths) {
     a.issues.tap.length ? `- Small targets <24px: ${a.issues.tap.slice(0, 6).join(', ')}` : null,
     a.issues.unlabeled.length ? `- Controls without accessible name: ${a.issues.unlabeled.join(' | ')}` : null,
     a.issues.alt ? `- ${a.issues.alt} <img> without alt` : null);
+  if (!first) lines.push(`- Craft (first screen): ${c.families.length} famil${c.families.length === 1 ? 'y' : 'ies'} (${c.families.join(', ')}), largest ${Math.round(c.max)}px ${c.maxFam} = ${c.ratio}× body ${c.body}px, drawn visuals ${c.visual}% of screen, ${c.items} object graphics`,
+    c.ratio < 2.4 ? `- FLAT TYPE: largest text is only ${c.ratio}× body. Set one line as image (≥ 3× body, display face) — references/craft.md` : null,
+    c.families.length < 2 && c.ratio < 3.5 ? `- ONE VOICE: a single family with no display contrast. Pair a display face or use the family's extreme range — references/craft.md` : null,
+    c.visual < 8 && c.items < 3 ? `- NO SIGNATURE VISUAL: nothing drawn on the first screen (illustration, 3D, generative, item graphics) — references/craft.md` : null);
   if (!first) {
     first = a;
     // Keyboard focus visibility on the first few focusable elements (switch to keyboard modality first).

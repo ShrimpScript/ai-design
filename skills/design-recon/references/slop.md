@@ -7,7 +7,7 @@ The brief's explicit words override this list. Everything here is a *default*, n
 - [ ] The typeface was chosen for a reason you can state (x-height for dense data, a width axis for headings, the voice) and isn't on the default list without that reason.
 - [ ] The hero or first screen shows the product's actual thing, not a generic headline + subhead + two buttons + gradient.
 - [ ] The layout isn't the template stack (hero → logos → 3 feature cards → testimonial → pricing → CTA) unless the story needs that order.
-- [ ] Boldness is spent in exactly one place.
+- [ ] Boldness is spent in one memorable moment, and all five craft layers (`craft.md`) are still present. Restraint means no decoration, not no visuals.
 - [ ] The copy uses the user's nouns and verbs. No sentence could be pasted onto another product's site unchanged.
 
 ## Visual tells → replacements

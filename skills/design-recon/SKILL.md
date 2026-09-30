@@ -13,7 +13,7 @@ Generated UI looks generic because it comes from the average of the training dat
 | `.design/brief.md` exists, small change | **Build**: read the brief → build → verify (step 5). No recon. |
 | brief exists, new surface | **Surface**: recon only if this surface type has no references yet → 4 → 5 |
 | no brief, clear request | **Full**: 1 → 6 |
-| "quick", no human available, or a deliberately vague prompt ("a modern AI SaaS site") | **Quick**: infer every answer, state the assumptions in one line in the brief, **2 references, no board**, skip checkpoint A, and a second shoot round only for real defects |
+| "quick", no human available, or a deliberately vague prompt ("a modern AI SaaS site") | **Quick**: infer every answer, state the assumptions in one line in the brief, **2 references (1 adjacent-world + 1 craft), no board**, skip checkpoint A, and a second shoot round only for real defects. **Quick cuts process, never craft**: the § Craft layers are still required |
 
 Split the request first: what the brief, the code or this skill already covers (apply it, mention it in one line) versus what is new (where the effort goes). Don't re-verify decisions the user already made.
 
@@ -28,25 +28,25 @@ Pick sites with `references/sources.md`: the user's picks, 1–2 competitors (to
 `recon.mjs <urls> --out .design/recon --pages 2` → read each `digest.md` (~1k tokens) and `board.mjs` → view `board.jpg`. Write **Steal / Avoid** lines into the brief. Each line cites a measured value and why it fits; steal systems (scale, density, borders, timing), never identity. Checkpoint A (Full only): the user ticks `board.html` and pastes back KEEP/NOTE.
 
 ## 4. Direction (in the brief, before code)
-Tokens (colours by role, 1–2 families + scale, spacing, radius ladder, elevation, motion) · ASCII layout · **one memorable thing** · slop pre-check (`references/slop.md` § Plan). Load only what the brief needs:
+Tokens (colours by role, display + text faces and scale, spacing, radius ladder, elevation, motion) · ASCII layout · **§ Craft** (always read `references/craft.md`): display face + key line ≥ 3× body, a **signature visual** from the subject that shows data (parametric SVG, 3D, generative, diagram), drawn item graphics, state motion, material/light · slop pre-check (`references/slop.md` § Plan). Avoiding slop is not enough: plain and correct loses to crafted. Load only what the brief needs:
 | Need | Reference | Tool |
 |---|---|---|
 | Context rules (SaaS, brand, ads, personal) | `contexts.md` | — |
-| Type (prefer round, open, regular width, ≥ 400; **rotate faces**, never the previous project's, specimen ≥ 3) | `fonts.md` | `specimen.mjs`, `fetch-font.mjs` |
+| Type (display + text pairing; round, open UI text ≥ 400; **rotate faces**, never the previous project's, specimen ≥ 3) | `fonts.md` | `specimen.mjs`, `fetch-font.mjs` |
 | Brand system, logo, advanced typography | `brand.md` | `brandboard.mjs` → board, OG, favicon, tokens |
 | Colour sanity | `slop.md` § Awkward | `palette.mjs` |
 | Hero, scroll, page transitions, state motion, diagrams | `patterns.md` | `motion.mjs` (measure exemplars, runs in the background) |
-| 3D object | `3d.md` | `inspect3d.mjs` |
+| 3D object (brand heroes, product objects, an app's hero moment; attempt it when it fits, since verification makes it safe) | `3d.md` | `inspect3d.mjs` |
 
 ## 5. Build, then verify (every mode)
 Real content (no lorem, fake metrics, stock avatars, "acme"). **Apps open in a realistic working state:** seed clearly labelled example data by default (with a way to clear it), not behind a "try examples" button. The empty state is a state you design, not the first impression. Tokens first, then components, and every state (empty, loading, error, long text, mobile). Then:
 ```
 node scripts/slop-lint.mjs src/                        # HIGH must be fixed
 node scripts/palette.mjs src/styles.css                 # awkward / AI colour combinations
-node scripts/shoot.mjs <url|file> --label v1           # 390/768/1440 + contrast, focus, overflow, fonts, motion
+node scripts/shoot.mjs <url|file> --label v1           # 390/768/1440 + craft, contrast, focus, overflow, fonts, motion
 node scripts/inspect3d.mjs <url|file>                   # only if there is 3D: must PASS, then cross-review
 ```
-View `sheet.jpg`, fix every reported item, then critique: *this* product, or any product? Remove one accessory.
+View `sheet.jpg` and fix every reported item (`FLAT TYPE`, `ONE VOICE` and `NO SIGNATURE VISUAL` count as defects). Then critique: the squint and name-swap tests (`craft.md`), and *this* product or any product? Remove one accessory, but never the signature visual.
 **Budget:** ≤ 3 shoot rounds. Re-shoot only what changed (`--widths`, `--click`, `--frames`), and never re-run passing checks on unchanged code.
 **3D is the exception to "look once":** declare the assembly (what threads, rests on, or attaches to what), pass `inspect3d` in every pose, then have an independent reviewer (a sub-agent given only the spec and `views.jpg`) confirm each relationship. Repeat until two consecutive clean passes. Models look right from the hero angle while floating or clipping in 3D.
 
