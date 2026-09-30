@@ -1,0 +1,14 @@
+# Keep digests, tokens, contact sheets and the board; drop the raw frames (regenerate with recon.mjs).
+.design/recon/*/*.jpg
+!.design/recon/*/sheet.jpg
+!.design/recon/*/desktop.jpg
+.design/recon/*/svg/
+.design/recon/*/*.webm
+.design/shots/*/*.jpg
+!.design/shots/*/sheet.jpg
+!.design/shots/final-editor/1440.jpg
+.design/recon/*/m-*.jpg
+!.design/recon/*/motion-sheet.jpg
+!.design/brand/*
+.design/recon.log
+.design/brand/board.html

@@ -10,7 +10,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { launch, newPage, shotCapped } from './lib/pw.mjs';
 import { contactSheet } from './lib/sheet.mjs';
-import { fontTier } from './lib/fonts.mjs';
+import { fontTier, isRound } from './lib/fonts.mjs';
 
 const argv = process.argv.slice(2);
 const opt = (n, d) => { const i = argv.indexOf(n); return i < 0 ? d : argv[i + 1]; };
@@ -43,19 +43,27 @@ function audit() {
   const cv = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
   const rgba = (c) => { cv.clearRect(0, 0, 1, 1); cv.fillStyle = '#000'; cv.fillStyle = c; cv.fillRect(0, 0, 1, 1); const d = cv.getImageData(0, 0, 1, 1).data; return [d[0], d[1], d[2], d[3] / 255]; };
   const lum = ([r, g, b]) => { const f = v => (v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+  // Background actually painted under the text: walk the hit-test stack at the element's centre
+  // (catches sibling overlays like toggle thumbs), falling back to ancestors.
   const bgOf = (el) => {
-    const stack = [];
-    for (let e = el; e; e = e.parentElement) {
+    const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const inView = x >= 0 && y >= 0 && x < innerWidth && y < innerHeight;
+    const stack = inView ? document.elementsFromPoint(x, y) : [];
+    const chain = stack.length && stack.includes(el) ? stack.slice(stack.indexOf(el)) : (() => { const a = []; for (let e = el; e; e = e.parentElement) a.push(e); return a; })();
+    const layers = [];
+    for (const e of chain) {
       const cs = getComputedStyle(e);
-      if (cs.backgroundImage !== 'none' && !cs.backgroundImage.includes('gradient(') ) return null; // image bg: unknown
-      const c = rgba(cs.backgroundColor); if (c[3] > 0) { stack.push(c); if (c[3] >= 0.99) break; }
+      if (e !== el && e.contains(el) === false && !inView) continue;
+      if (cs.backgroundImage !== 'none' && !cs.backgroundImage.includes('gradient(')) return null; // image: unknown
+      if (/^(IMG|VIDEO|CANVAS|svg)$/i.test(e.tagName) && e !== el) return null;
+      const c = rgba(cs.backgroundColor); if (c[3] > 0) { layers.push(c); if (c[3] >= 0.99) break; }
     }
     let out = [255, 255, 255];
-    for (const c of stack.reverse()) out = out.map((v, i) => v * (1 - c[3]) + c[i] * c[3]);
+    for (const c of layers.reverse()) out = out.map((v, i) => v * (1 - c[3]) + c[i] * c[3]);
     return out;
   };
   const issues = { contrast: [], tap: [], alt: 0, unlabeled: [] };
-  const sizes = {}, radii = {}, families = {}, colors = {};
+  const sizes = {}, radii = {}, families = {}, colors = {}; const squish = [];
   const els = [...document.querySelectorAll('body *')];
   for (const el of els) {
     const r = el.getBoundingClientRect(); if (r.width < 1 || r.height < 1) continue;
@@ -65,7 +73,12 @@ function audit() {
     if (own) {
       const fs = parseFloat(cs.fontSize); sizes[Math.round(fs)] = (sizes[Math.round(fs)] || 0) + 1;
       families[cs.fontFamily.split(',')[0].replace(/["']/g, '').trim()] = 1;
-      const fg = rgba(cs.color), bg = bgOf(el);
+      const ls = cs.letterSpacing === 'normal' ? 0 : parseFloat(cs.letterSpacing) / fs, wd = +(cs.fontVariationSettings.match(/"wdth"\s*([\d.]+)/) || [])[1] || parseFloat(cs.fontStretch) || 100;
+      if (squish.length < 8 && (+cs.fontWeight < 300 || ls < -0.03 || wd < 95)) squish.push(`"${el.textContent.trim().slice(0, 24)}" ${Math.round(fs)}px w${cs.fontWeight}${ls < -0.03 ? ' ls ' + ls.toFixed(3) + 'em' : ''}${wd < 95 ? ' wdth ' + wd : ''}`);
+      const fg = rgba(cs.color);
+      let bg = bgOf(el);
+      const ratioOf = (b) => { const f = fg.slice(0, 3).map((v, i) => v * fg[3] + b[i] * (1 - fg[3])); const [p, q] = [lum(f), lum(b)].sort((x, y) => y - x); return (p + 0.05) / (q + 0.05); };
+      if (bg && fg[3] > 0.05 && ratioOf(bg) < 4.5) { el.scrollIntoView({ block: 'center' }); bg = bgOf(el); } // re-measure what is really painted
       if (bg && fg[3] > 0.05) {
         const f = fg.slice(0, 3).map((v, i) => v * fg[3] + bg[i] * (1 - fg[3]));
         const [a, b] = [lum(f), lum(bg)].sort((x, y) => y - x); const ratio = (a + 0.05) / (b + 0.05);
@@ -84,9 +97,10 @@ function audit() {
   const fonts = [...document.fonts].filter(f => f.status === 'loaded').map(f => f.family.replace(/["']/g, ''));
   const generic = /^(serif|sans-serif|monospace|system-ui|-apple-system|ui-\w+|cursive|inherit|initial|BlinkMacSystemFont|Segoe UI|Arial|Helvetica|Times New Roman|Courier New|Georgia)$/i;
   const missing = Object.keys(families).filter(f => !generic.test(f) && !fonts.includes(f));
+  scrollTo(0, 0);
   return {
     overflow: document.documentElement.scrollWidth > innerWidth + 1 ? document.documentElement.scrollWidth : 0,
-    issues, missingFonts: missing, families: Object.keys(families),
+    issues, squish, missingFonts: missing, families: Object.keys(families),
     scale: Object.keys(sizes).map(Number).sort((a, b) => a - b), radii: Object.entries(radii).sort((a, b) => b[1] - a[1]),
     h: document.documentElement.scrollHeight,
   };
@@ -149,8 +163,9 @@ server?.close();
 
 const rad = first.radii.slice(0, 6).map(([k, v]) => `${k}×${v}`).join(' ');
 const report = [`# shoot ${label} — ${target}`, `Sheet: ${path.join(dir, 'sheet.jpg')}`, '',
-  `Fonts in use: ${first.families.map(f => fontTier(f) ? `${f} [${fontTier(f).toUpperCase()}]` : f).join(', ')}${first.missingFonts.length ? ` · NOT LOADED (fallback showing): ${first.missingFonts.join(', ')}` : ''}`,
+  `Fonts in use: ${first.families.map(f => fontTier(f) ? `${f} [${fontTier(f).toUpperCase()}]` : isRound(f) ? `${f} [round ✓]` : f).join(', ')}${first.missingFonts.length ? ` · NOT LOADED (fallback showing): ${first.missingFonts.join(', ')}` : ''}`,
   `Type sizes (${first.scale.length}): ${first.scale.join(' ')}${first.scale.length > 9 ? ' — too many steps, tighten the scale' : ''}`,
+  first.squish.length ? `- Thin or squished type: ${first.squish.join(' | ')}` : '- Type weight/width/tracking: ok',
   `Radii: ${rad || 'none'}${first.radii.length > 5 ? ' — too many radii' : ''}`,
   first.focus.length ? `- No visible focus style: ${first.focus.join(', ')}` : '- Focus styles: visible on sampled controls',
   first.rm ? `- ${first.rm} long/infinite animations still run under prefers-reduced-motion` : '- Reduced motion: respected',

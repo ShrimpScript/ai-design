@@ -40,17 +40,22 @@ skills/design-recon/
     slop.md                tells → replacements (visual, copy, app-specific) + plan pre-check
     sources.md             where references come from, per need (flows, motion, diagrams, fonts…)
     motion.md              motion tokens, tool choice (CSS → View Transitions → Motion/GSAP → Lottie/Rive), diagrams
+    brand.md               brand systems: metaphor → mark (16px test) → wordmark/lockups → palette roles → advanced typography → graphic devices; awkward-branding rejects
+    3d.md                  3D objects: procedural Three.js / CC0 glTF / pre-rendered; lighting, materials, motion, fallback, budget; 3D slop
     patterns.md            clean heroes, scroll transitions, page transitions, in-page updates: recipes, budgets, exemplars to measure
-    fonts.md               tiers (AI-default / trend-saturated / novelty-cliché), less-worn picks by job, commercial → free, self-hosting
+    fonts.md               house preference (round, open, regular width, ≥ 400), Google and Anthropic-style fallbacks, tiers (AI-default / saturated / condensed / novelty), commercial → free
   scripts/
     recon.mjs              measure live sites → digest.md (~1k tokens, incl. hero anatomy) + one contact sheet
     motion.mjs             measure HOW a site moves: reveals (from→to, timing, stagger), scroll-linked/pinned, GSAP/ScrollTrigger, page transitions, tab/toggle/accordion motion
     board.mjs              merge recons → comparison table + board.html the user ticks and copies back
     shoot.mjs              screenshot YOUR build at 390/768/1440 + runtime audit
     slop-lint.mjs          static detector for generated-UI tells (no dependencies)
+    brandboard.mjs         brand.json → one brand board (lockups, 16px favicon test, palette, type, voice, OG) + og.png, favicon.svg, tokens.css
+    palette.mjs            awkward or AI colour-scheme audit in OKLCH (muddy, vibrating, neon pairs, grey temperature, duplicates, contrast)
     specimen.mjs           render candidate fonts with your headline on your colours → one image, tier-flagged
     fetch-font.mjs         self-host Google Fonts / Fontshare faces (woff2 + @font-face)
-    lib/fonts.mjs          one font-tier list shared by lint, shoot, recon and specimen
+    lib/fonts.mjs          font tiers + round list shared by lint, shoot, recon, specimen, brandboard
+    lib/color.mjs          OKLCH, contrast, palette audit
   tests/fixtures/slop.html a "typical AI landing page" (scores 0/100, 19 findings)
 ```
 
@@ -92,6 +97,7 @@ It **stacks** with the others: `frontend-design`'s taste principles and `impecca
 
 ## Examples
 - [`examples/test-run/`](examples/test-run/) **Rail**: a product web app (restaurant shift scheduling). Recon of 4 sites → brief → build → 4 verify rounds.
+- [`examples/keyring/`](examples/keyring/) **keyring**: "use your AI subscriptions in the cloud". A generated brand system (board, OG, favicon), a procedural 3D keyring hero, round type (Google Sans Flex `ROND`), and a palette audit.
 - [`examples/saas-demo/`](examples/saas-demo/) **Firstlight**: an AI SaaS marketing site from a one-line prompt, with zero questions asked. Recon plus motion recon, a scroll-linked night → dawn story, view-transition routes, and 3 budget-capped verify rounds.
 
 ## Limitations (known, measured while building the examples)
@@ -103,4 +109,7 @@ It **stacks** with the others: `frontend-design`'s taste principles and `impecca
 - **Fonts behind cross-origin CSS:** `@font-face` names can be missing. Families still appear via computed styles and loaded fonts.
 - **Static lint is textual:** it can't see styles computed at runtime (CSS-in-JS themes). `shoot.mjs` covers the runtime side (fonts, radii, contrast), and neither judges taste, so the sheet still needs a look.
 - **Frames are timing snapshots:** filmstrips show states, not smooth motion. `--video` records a webm for humans.
+- **3D in the artifact viewer:** the hero loads Three.js from jsDelivr; if a host blocks it, the built-in SVG fallback stays. Heavy glTF models need a real host (keep them < 1.5 MB).
+- **Brand marks are drawn by the model:** strong for geometric marks, weak for illustrative or hand-drawn identities. Use a designer for those; the brandboard still tests the result.
+- **Round preference is house taste:** earlier demos (Rail's condensed Archivo, Firstlight's tight tracking) predate it and now draw MED lint findings. Set `lint-allow` in a brief to opt out.
 - **Tiers age:** "trend-saturated" fonts and palettes change. Update `lib/fonts.mjs` and `slop.md` as new defaults emerge.

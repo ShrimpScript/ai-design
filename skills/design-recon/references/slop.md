@@ -41,6 +41,11 @@ The brief's explicit words override this list. Everything here is a *default*, n
 | Title Case Everything | Sentence case |
 | Errors that apologise ("Oops! Something went wrong") | What happened and what to do: "Couldn't publish. 2 shifts overlap on Friday. Fix them or publish anyway." |
 
+## Awkward themes, colour schemes and branding
+Run `node scripts/palette.mjs <css or name=#hex…>` on the tokens. It flags generated palettes (purple pair, cream + clay, black + acid, cyberpunk cyan + magenta, pastel rainbow) and awkward ones: muddy mid-tone accents, vibrating complements at equal lightness, two neons, one neon next to a dull accent, > 3 accents, warm and cool greys mixed, near-duplicate tokens, text below 4.5:1, and accents with no text shade.
+Awkward **themes**: dark mode made by inverting the light palette (dark grey on black, oversaturated accents), glassmorphism on a busy background, a "premium" black-and-gold that reads as a casino, gradients on every surface, a theme whose palette contradicts the voice (a neon party palette on a finance tool), and a light and dark theme that don't feel like the same brand.
+Awkward **branding**: see `brand.md` §7 (cliché names, marks that read as UI icons, personality mismatch, borrowed identity).
+
 ## AI-product tells
 Glowing orb or neural-net art, sparkle icons, a typewriter cycling "for X / for Y", a "How can I help you today?" chat bubble, "AI-powered" as the headline, sci-fi fonts (`fonts.md` § novelty), purple-to-cyan glow, and a fake chat transcript that shows nothing specific. Instead: **show a real task being done end to end** (input → reasoning/evidence → output → the human's control over it), the guardrails, and the actual time or cost saved on an example.
 

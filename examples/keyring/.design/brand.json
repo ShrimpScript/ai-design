@@ -1,0 +1,19 @@
+{
+  "name": "keyring",
+  "tagline": "Bring the AI plans you already pay for. Run them in the cloud.",
+  "mark": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\"><rect x=\"3\" y=\"3\" width=\"15\" height=\"15\" rx=\"7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3.4\"/><path class=\"acc\" fill-rule=\"evenodd\" d=\"M18.5 14h6a4.5 4.5 0 0 1 4.5 4.5v6a4.5 4.5 0 0 1-4.5 4.5h-6a4.5 4.5 0 0 1-4.5-4.5v-6a4.5 4.5 0 0 1 4.5-4.5ZM21.5 19.3a2.2 2.2 0 1 0 0 4.4a2.2 2.2 0 1 0 0-4.4Z\"/></svg>",
+  "wordmark": { "family": "Google Sans Flex:opsz,wdth,wght,ROND@6..144,25..151,100..1000,0..100", "weight": 620, "tracking": "-0.01em", "case": "lowercase", "axes": "\"ROND\" 100, \"opsz\" 72" },
+  "fonts": {
+    "display": { "family": "Google Sans Flex:opsz,wdth,wght,ROND@6..144,25..151,100..1000,0..100", "weight": 600 },
+    "text": { "family": "Google Sans Flex:opsz,wdth,wght,ROND@6..144,25..151,100..1000,0..100", "weight": 420 },
+    "mono": { "family": "Google Sans Code" }
+  },
+  "colors": {
+    "paper": "#F5F6F3", "card": "#FFFFFF", "sage": "#E4ECE6",
+    "ink": "#16211C", "ink-2": "#4B5A52", "line": "#D8DFDA",
+    "accent": "#D4A72C", "accent-ink": "#7A5C0E",
+    "d-coral": "#E7705F", "d-mint": "#56B98F", "d-sky": "#5E9FE0"
+  },
+  "voice": { "is": ["Plain about money", "Reassuring about access", "Specific (hours, dollars, models)"], "not": ["Hype or \"AI-powered\"", "Techno-mystic", "Cute or punny"] },
+  "og": { "headline": "Your AI subscriptions, working in the cloud.", "sub": "Sign in with the plans you already pay for. Pay only for the machine time." }
+}

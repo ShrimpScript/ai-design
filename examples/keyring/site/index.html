@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>keyring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wdth,wght,ROND@6..144,25..151,100..1000,0..100&family=Google+Sans+Code:wght@400;500&display=swap">
+<style>
+/* Layout: warm paper page; hero pairs the headline with a 3D keyring; one dark band shows the product; fob-shaped cards carry pricing. */
+:root {
+  color-scheme: light;
+  --paper: #F5F6F3; --card: #FFFFFF; --sage: #E4ECE6;
+  --ink: #16211C; --ink-2: #4B5A52; --line: #D8DFDA;
+  --accent: #D4A72C; --accent-ink: #7A5C0E; --accent-bg: #F4EACB;
+  --on-ink: var(--paper); --on-ink-2: #A9B8AF; --ink-line: #2C3A33; --ink-3: #1E2B25;
+  --ok: #2E7D5B; --ok-on-ink: #7BD3A8; --status-wait: #E9B949;
+
+  --sans: "Google Sans Flex", "Google Sans", "Albert Sans", ui-sans-serif, system-ui, sans-serif;
+  --mono: "Google Sans Code", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --round-display: "ROND" 100; --round-text: "ROND" 30;
+
+  --r-chip: 6px; --r-ctl: 12px; --r-panel: 22px;
+  --ease: cubic-bezier(.2, 0, 0, 1); --t-1: 160ms; --t-2: 240ms;
+  --max: 1180px; --gutter: max(16px, 4vw);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 420 16px/1.6 var(--sans); font-variation-settings: var(--round-text); -webkit-font-smoothing: antialiased; }
+[hidden] { display: none !important; }
+h1, h2, h3, p { margin: 0; }
+h1, h2 { font-weight: 600; font-variation-settings: var(--round-display); letter-spacing: -0.02em; text-wrap: balance; }
+h3 { font-weight: 600; font-variation-settings: var(--round-display); }
+p { text-wrap: pretty; }
+a { color: inherit; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2.5px solid var(--accent-ink); outline-offset: 3px; border-radius: 6px; }
+.dark :focus-visible { outline-color: var(--accent); }
+.wrap { max-width: var(--max); margin: 0 auto; padding-inline: var(--gutter); }
+.mono { font-family: var(--mono); font-variation-settings: normal; font-size: .86em; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------- nav */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter: blur(8px); }
+.nav .wrap { display: flex; align-items: center; gap: 28px; height: 72px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 620; font-size: 22px; font-variation-settings: "ROND" 100, "opsz" 72; letter-spacing: -0.01em; }
+.links { display: flex; gap: 4px; margin-right: auto; }
+.links a { text-decoration: none; color: var(--ink-2); padding: 10px 12px; border-radius: var(--r-ctl); font-size: 16px; }
+.links a:hover { color: var(--ink); background: var(--sage); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 22px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--card); text-decoration: none; font-weight: 560; font-size: 16px; font-variation-settings: "ROND" 100; transition: background var(--t-1) var(--ease), border-color var(--t-1) var(--ease), transform var(--t-1) var(--ease); white-space: nowrap; }
+.btn:hover { border-color: var(--ink-2); }
+.btn:active { transform: scale(.98); }
+.btn-primary { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.btn-primary:hover { background: #24332B; border-color: #24332B; }
+.btn-brass { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+.btn-brass:hover { background: #E0B53E; border-color: #E0B53E; }
+.btn-sm { height: 40px; padding: 0 16px; font-size: 14px; }
+.menu { display: none; }
+
+/* ---------- hero */
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 8px 40px; align-items: start; padding-block: 48px 72px; }
+.hero h1 { grid-column: 1 / -1; position: relative; z-index: 1; font-size: clamp(40px, 6.2vw, 80px); line-height: 1.02; max-width: 13em; }
+.hero .copy { padding-top: 20px; }
+.lede { margin-top: 0; font-size: 18px; color: var(--ink-2); max-width: 31em; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.fine { margin-top: 18px; font-size: 14px; color: var(--ink-2); }
+.fine b { color: var(--ink); font-weight: 560; }
+.object { position: relative; aspect-ratio: 1 / 1.05; width: 100%; max-width: 520px; justify-self: center; margin-top: -64px; }
+.object::after { content: ""; position: absolute; left: 22%; right: 22%; bottom: 3%; height: 7%; border-radius: 50%; background: radial-gradient(closest-side, rgb(22 33 28 / .22), transparent); filter: blur(4px); }
+.object svg, .object canvas { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity 500ms var(--ease); }
+.object canvas { opacity: 0; }
+.object.live canvas { opacity: 1; }
+.object.live svg { opacity: 0; }
+
+/* ---------- workspaces (dark band) */
+.dark { background: var(--ink); color: var(--on-ink); border-radius: var(--r-panel); margin: 0 max(8px, 1.5vw); }
+.band { padding-block: 88px; }
+.band-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; }
+.band h2 { font-size: clamp(32px, 4vw, 48px); line-height: 1.05; max-width: 15em; }
+.band .sub { color: var(--on-ink-2); margin-top: 12px; max-width: 34em; }
+.switch { display: inline-flex; align-items: center; gap: 12px; background: var(--ink-3); border: 1px solid var(--ink-line); padding: 8px 8px 8px 16px; border-radius: 999px; }
+.switch span { color: var(--on-ink-2); font-size: 14px; }
+.toggle { position: relative; width: 132px; height: 40px; border-radius: 999px; border: 0; background: var(--ink-line); padding: 0; }
+.toggle i { position: absolute; top: 4px; left: 4px; width: 62px; height: 32px; border-radius: 999px; background: var(--on-ink); transition: transform var(--t-2) var(--ease); }
+.toggle b { position: relative; z-index: 1; display: inline-block; width: 50%; font-weight: 560; font-size: 14px; color: var(--on-ink-2); transition: color var(--t-2) var(--ease); }
+.toggle[aria-checked="false"] i { transform: translateX(62px); }
+.toggle[aria-checked="true"] b:first-of-type, .toggle[aria-checked="false"] b:last-of-type { color: var(--ink); }
+.board { margin-top: 40px; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; }
+.sessions { background: var(--ink-3); border: 1px solid var(--ink-line); border-radius: var(--r-panel); overflow: hidden; }
+.sess { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto auto; gap: 16px; align-items: center; padding: 18px 22px; border-top: 1px solid var(--ink-line); }
+.sess:first-child { border-top: 0; }
+.fob { width: 26px; height: 26px; border-radius: var(--r-chip); position: relative; }
+.fob::after { content: ""; position: absolute; left: 50%; top: 6px; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; background: var(--ink-3); }
+.fob.c { background: var(--on-ink); } .fob.g { background: var(--line); } .fob.m { background: var(--accent); }
+.sess h3 { font-size: 16px; font-weight: 560; }
+.sess p { font-size: 14px; color: var(--on-ink-2); margin-top: 2px; }
+.state { font-size: 14px; font-weight: 560; display: inline-flex; align-items: center; gap: 8px; }
+.state::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ok-on-ink); }
+.state.wait::before { background: var(--status-wait); } .state.done::before { background: var(--on-ink-2); }
+.sess .t { font-family: var(--mono); font-size: 14px; color: var(--on-ink-2); min-width: 92px; text-align: right; font-variant-numeric: tabular-nums; }
+.phone { background: var(--ink-3); border: 1px solid var(--ink-line); border-radius: var(--r-panel); padding: 20px; display: grid; gap: 12px; align-content: start; }
+.phone .k { font-size: 14px; color: var(--on-ink-2); }
+.msg { background: var(--ink-line); border-radius: var(--r-ctl); padding: 12px 14px; font-size: 14px; }
+.msg.you { background: var(--on-ink); color: var(--ink); justify-self: end; max-width: 85%; }
+.laptop-note { font-size: 14px; color: var(--on-ink-2); margin-top: 16px; }
+.laptop-note b { color: var(--on-ink); font-weight: 560; }
+
+/* ---------- steps */
+.section { padding-block: 112px 0; }
+.section h2 { font-size: clamp(32px, 4vw, 48px); line-height: 1.05; max-width: 16em; }
+.section .sub { margin-top: 14px; color: var(--ink-2); max-width: 36em; font-size: 18px; }
+.steps { margin-top: 48px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; list-style: none; padding: 0; counter-reset: s; }
+.steps li { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-panel); padding: 28px; counter-increment: s; }
+.steps li::before { content: counter(s); display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-ctl); background: var(--sage); font-weight: 600; font-variation-settings: var(--round-display); margin-bottom: 20px; }
+.steps h3 { font-size: 22px; }
+.steps p { margin-top: 8px; color: var(--ink-2); font-size: 16px; }
+.steps code { font-family: var(--mono); font-size: 14px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-chip); padding: 2px 6px; }
+
+/* ---------- cost */
+.cost { margin-top: 48px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-panel); padding: 32px; }
+.panel label { display: block; font-weight: 560; font-size: 16px; }
+.range { width: 100%; margin: 20px 0 8px; accent-color: var(--ink); height: 32px; }
+.ticks { display: flex; justify-content: space-between; color: var(--ink-2); font-size: 14px; }
+.big { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+.big b { font-size: clamp(56px, 7vw, 88px); font-weight: 600; font-variation-settings: var(--round-display); letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.big span { color: var(--ink-2); font-size: 18px; }
+.calc-rows { margin-top: 20px; display: grid; gap: 8px; font-size: 14px; color: var(--ink-2); }
+.calc-rows div { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 8px; }
+.calc-rows b { color: var(--ink); font-weight: 560; font-variant-numeric: tabular-nums; }
+.note { font-size: 14px; color: var(--ink-2); margin-top: 16px; }
+
+/* ---------- security */
+.trust { margin-top: 48px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.trust div { border-top: 2px solid var(--ink); padding-top: 16px; }
+.trust h3 { font-size: 18px; }
+.trust p { margin-top: 6px; font-size: 14px; color: var(--ink-2); }
+
+/* ---------- pricing */
+.plans { margin-top: 48px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+.plan { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-panel); padding: 44px 28px 28px; display: flex; flex-direction: column; gap: 14px; }
+.plan::before { content: ""; position: absolute; top: 16px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); }
+.plan.main { background: var(--accent-bg); border-color: #E6D39A; }
+.plan h3 { font-size: 22px; }
+.plan .for { color: var(--ink-2); font-size: 14px; }
+.price { display: flex; align-items: baseline; gap: 6px; }
+.price b { font-size: 48px; font-weight: 600; font-variation-settings: var(--round-display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.price span { color: var(--ink-2); font-size: 14px; }
+.plan ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14px; }
+.plan .btn { margin-top: auto; }
+
+/* ---------- faq */
+.faq { margin-top: 40px; max-width: 780px; }
+.qa { border-bottom: 1px solid var(--line); }
+.qa button { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 22px 0; background: none; border: 0; font-size: 18px; font-weight: 560; text-align: left; font-variation-settings: "ROND" 60; }
+.qa button::after { content: ""; flex: none; width: 12px; height: 12px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-3px); transition: transform var(--t-2) var(--ease); }
+.qa button[aria-expanded="true"]::after { transform: rotate(-135deg) translateY(-3px); }
+.qa .a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--t-2) var(--ease); }
+.qa .a > div { overflow: hidden; }
+.qa .a p { padding-bottom: 22px; color: var(--ink-2); max-width: 62ch; }
+.qa button[aria-expanded="true"] + .a { grid-template-rows: 1fr; }
+
+/* ---------- final */
+.final { margin-top: 112px; text-align: left; padding-block: 72px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: center; }
+.final h2 { color: var(--on-ink); }
+.final p { color: var(--on-ink-2); margin-top: 10px; }
+footer { padding-block: 40px 56px; color: var(--ink-2); font-size: 14px; }
+footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+footer nav { display: flex; gap: 8px; }
+footer nav a { padding: 10px 8px; }
+
+/* ---------- responsive */
+@media (max-width: 960px) {
+  .hero .wrap { grid-template-columns: 1fr; padding-top: 24px; }
+  .object { max-width: 440px; margin-top: 8px; }
+  .board, .cost { grid-template-columns: 1fr; }
+  .steps, .plans { grid-template-columns: 1fr; }
+  .trust { grid-template-columns: 1fr 1fr; }
+  .final { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .links, .nav .signin { display: none; }
+  .nav .wrap { justify-content: space-between; gap: 12px; }
+}
+@media (max-width: 760px) {
+  .sess { grid-template-columns: 26px minmax(0, 1fr); row-gap: 6px; }
+  .sess .state, .sess .t { grid-column: 2; justify-self: start; text-align: left; min-width: 0; }
+  .trust { grid-template-columns: 1fr; }
+  .band { padding-block: 64px; }
+  .section { padding-top: 80px; }
+  .dark { border-radius: var(--r-panel); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="keyring home">
+      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="15" height="15" rx="7.5" fill="none" stroke="currentColor" stroke-width="3.4"/><path fill="#D4A72C" fill-rule="evenodd" d="M18.5 14h6a4.5 4.5 0 0 1 4.5 4.5v6a4.5 4.5 0 0 1-4.5 4.5h-6a4.5 4.5 0 0 1-4.5-4.5v-6a4.5 4.5 0 0 1 4.5-4.5ZM21.5 19.3a2.2 2.2 0 1 0 0 4.4a2.2 2.2 0 1 0 0-4.4Z"/></svg>
+      keyring
+    </a>
+    <nav class="links" aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#cost">Cost</a>
+      <a href="#security">Security</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+    <a class="btn btn-sm signin" href="#start">Sign in</a>
+    <a class="btn btn-sm btn-primary" href="#start">Start a workspace</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <h1 id="hero-title">Your AI subscriptions, working in the cloud.</h1>
+      <div class="copy">
+        <p class="lede">Sign in with the plans you already pay for. keyring runs Claude Code, Codex and Gemini CLI in a cloud workspace that keeps going after you close your laptop.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#start">Start a workspace</a>
+          <a class="btn" href="#cost">Work out the cost</a>
+        </div>
+        <p class="fine">You pay for machine time only: <b class="num">$0.09 an hour</b>. Your first 10 hours each month are free.</p>
+      </div>
+      <div class="object" id="ring3d" role="img" aria-label="A keyring holding a brass key and three fobs labelled Claude, ChatGPT and Gemini">
+        <!-- Static fallback: shown until WebGL renders its first frame, and kept if it can't. -->
+        <svg viewBox="0 0 400 420" aria-hidden="true">
+          <circle cx="200" cy="96" r="62" fill="none" stroke="#B9C1BC" stroke-width="12"/>
+          <g transform="rotate(14 150 150)"><rect x="112" y="150" width="86" height="112" rx="26" fill="#16211C"/><circle cx="155" cy="172" r="10" fill="#F5F6F3"/><text x="155" y="226" text-anchor="middle" font-family="Google Sans Flex, sans-serif" font-weight="600" font-size="18" fill="#EEF2EF">Claude</text></g>
+          <g><rect x="178" y="158" width="86" height="112" rx="26" fill="#D3DFD7"/><circle cx="221" cy="180" r="10" fill="#F5F6F3"/><text x="221" y="234" text-anchor="middle" font-family="Google Sans Flex, sans-serif" font-weight="600" font-size="18" fill="#16211C">ChatGPT</text></g>
+          <g transform="rotate(-12 260 150)"><rect x="244" y="150" width="86" height="112" rx="26" fill="#FFFFFF" stroke="#D8DFDA" stroke-width="2"/><circle cx="287" cy="172" r="10" fill="#F5F6F3" stroke="#D8DFDA" stroke-width="2"/><text x="287" y="226" text-anchor="middle" font-family="Google Sans Flex, sans-serif" font-weight="600" font-size="18" fill="#16211C">Gemini</text></g>
+          <g transform="rotate(-28 170 150)"><circle cx="170" cy="160" r="26" fill="#D4A72C"/><circle cx="170" cy="152" r="8" fill="#F5F6F3"/><path d="M163 182h14v120h-14z M177 250h12v10h-12z M177 272h9v10h-9z" fill="#D4A72C"/></g>
+        </svg>
+        <canvas></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section class="dark" aria-labelledby="ws-title">
+    <div class="wrap band">
+      <div class="band-head">
+        <div>
+          <h2 id="ws-title">Close the laptop. The work keeps going.</h2>
+          <p class="sub">Each workspace is a small cloud machine with your repo, your tools and your signed-in CLIs. Check in from your phone when an agent needs you.</p>
+        </div>
+        <div class="switch"><span id="laptop-label">Your laptop</span>
+          <button class="toggle" id="laptop" type="button" role="switch" aria-checked="true" aria-labelledby="laptop-label"><i aria-hidden="true"></i><b>Open</b><b>Closed</b></button>
+        </div>
+      </div>
+      <div class="board">
+        <div class="sessions" aria-live="polite">
+          <div class="sess"><span class="fob c" aria-hidden="true"></span><div><h3>api-refactor</h3><p>Claude Code on hollis/api · "move auth to middleware"</p></div><span class="state">Running</span><span class="t" data-run="8040">2h 14m</span></div>
+          <div class="sess"><span class="fob g" aria-hidden="true"></span><div><h3>flaky-tests</h3><p>Codex on hollis/web · 3 failing specs</p></div><span class="state wait">Needs you</span><span class="t" data-run="2710">45m 10s</span></div>
+          <div class="sess"><span class="fob m" aria-hidden="true"></span><div><h3>docs-sweep</h3><p>Gemini CLI on hollis/docs · PR #412 opened</p></div><span class="state done">Done</span><span class="t">1h 02m</span></div>
+        </div>
+        <div class="phone" aria-label="Phone view of the flaky-tests workspace">
+          <p class="k">flaky-tests · on your phone</p>
+          <p class="msg">Two specs fail only on CI because of a timezone. Fix the test or the date helper?</p>
+          <p class="msg you">The helper. Keep UTC.</p>
+          <p class="msg">On it. I'll open a PR when the suite passes.</p>
+        </div>
+      </div>
+      <p class="laptop-note" id="laptop-note"><b>Laptop open.</b> Sessions run in the cloud either way; your machine is just a window.</p>
+    </div>
+  </section>
+
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <h2 id="how-title">Three steps, and you only do the first one once.</h2>
+      <ol class="steps">
+        <li><h3>Add your keys</h3><p>Open a workspace and run each provider's own login, like <code>claude login</code>. The session is stored encrypted in your vault, not shared with anyone.</p></li>
+        <li><h3>Open a workspace</h3><p>Pick a repo and a CLI. Every workspace gets 4 vCPU and 16 GB, your dotfiles, and its own URL for previews.</p></li>
+        <li><h3>Hand off and walk away</h3><p>Give the agent a task, close the lid, and answer its questions from your phone. You get a pull request, not a surprise bill.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" id="cost" aria-labelledby="cost-title">
+    <div class="wrap">
+      <h2 id="cost-title">You already pay for the model. Here's the machine.</h2>
+      <p class="sub">keyring charges for workspace time. Model usage stays on your existing plan and counts toward its limits as it would on your laptop.</p>
+      <div class="cost">
+        <div class="panel">
+          <label for="hours">Agent hours per working day</label>
+          <input class="range" id="hours" type="range" min="1" max="12" step="1" value="4" aria-describedby="hours-out">
+          <div class="ticks" aria-hidden="true"><span>1h</span><span>6h</span><span>12h</span></div>
+          <p class="note">A workspace sleeps after 20 minutes idle and stops billing.</p>
+        </div>
+        <div class="panel" id="hours-out" aria-live="polite">
+          <p style="color:var(--ink-2)">Your monthly keyring bill</p>
+          <div class="big"><b id="total">$5.40</b><span>/ month</span></div>
+          <div class="calc-rows">
+            <div><span>Workspace hours (22 working days)</span><b id="h-total">88 h</b></div>
+            <div><span>Free hours</span><b>− 10 h</b></div>
+            <div><span>Billed at $0.09 / h</span><b id="h-billed">78 h</b></div>
+          </div>
+          <p class="note">Example for one workspace on the default machine. Your AI plan is billed by its provider, as today.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="security" aria-labelledby="sec-title">
+    <div class="wrap">
+      <h2 id="sec-title">Your keys stay yours.</h2>
+      <div class="trust">
+        <div><h3>Signed in by you</h3><p>Each provider session is created by your own login in your own workspace. We never pool, share or resell access.</p></div>
+        <div><h3>Encrypted vault</h3><p>Sessions are encrypted with a key tied to your account and loaded only into your workspaces.</p></div>
+        <div><h3>Isolated machines</h3><p>Every workspace is its own microVM. Nothing is shared between customers, or between your workspaces unless you link them.</p></div>
+        <div><h3>Revoke anytime</h3><p>Remove a key and every workspace using it signs out within a minute. Log out at the provider and it stops too.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing" aria-labelledby="price-title">
+    <div class="wrap">
+      <h2 id="price-title">Pay for machine time. Nothing per token.</h2>
+      <div class="plans">
+        <article class="plan"><h3>Hobby</h3><p class="for">Try it on a side project.</p><div class="price"><b>$0</b><span>/ month</span></div><ul><li>10 workspace hours / month</li><li>1 workspace at a time</li><li>All three CLIs</li></ul><a class="btn" href="#start">Start free</a></article>
+        <article class="plan main"><h3>Pro</h3><p class="for">Agents working most days.</p><div class="price"><b>$0.09</b><span>/ workspace-hour</span></div><ul><li>10 free hours, then metered</li><li>Up to 5 workspaces at once</li><li>Phone check-ins and previews</li><li>Larger machines on demand</li></ul><a class="btn btn-primary" href="#start">Start a workspace</a></article>
+        <article class="plan"><h3>Team</h3><p class="for">Shared repos and policies.</p><div class="price"><b>$20</b><span>/ seat / month + hours</span></div><ul><li>Shared workspace templates</li><li>SSO and audit log</li><li>Spend limits per person</li></ul><a class="btn" href="#start">Talk to us</a></article>
+      </div>
+      <div class="faq">
+        <div class="qa"><button type="button" aria-expanded="false" aria-controls="q1">Is this allowed by my AI provider?</button><div class="a" id="q1"><div><p>keyring runs each provider's own CLI, signed in by you, for your own work: the same thing you do on your laptop, on a different machine. We never share or resell access. Plans differ, so check your plan's terms for limits on automated or long-running use.</p></div></div></div>
+        <div class="qa"><button type="button" aria-expanded="false" aria-controls="q2">Do I need API keys?</button><div class="a" id="q2"><div><p>No. You sign in with the subscription you already have. If you prefer API keys, you can add those too and they are billed by the provider.</p></div></div></div>
+        <div class="qa"><button type="button" aria-expanded="false" aria-controls="q3">What happens when a plan's limit is reached?</button><div class="a" id="q3"><div><p>The agent pauses and tells you, exactly as the CLI would locally. The workspace sleeps after 20 idle minutes, so you aren't billed while waiting.</p></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dark final-band" id="start" aria-labelledby="start-title">
+    <div class="wrap final">
+      <div><h2 id="start-title">Bring your keys. We'll keep the lights on.</h2><p>Your first 10 workspace hours each month are free.</p></div>
+      <a class="btn btn-brass" href="#top">Start a workspace</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>keyring is a fictional company, built as a design-recon demo. Claude, ChatGPT and Gemini are trademarks of their owners.</span>
+    <nav aria-label="Footer"><a href="#security">Security</a><a href="#pricing">Pricing</a><a href="#how">Docs</a></nav>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* laptop switch: sessions keep ticking either way (that's the product) */
+  const fmt = (s) => s >= 3600 ? `${Math.floor(s / 3600)}h ${String(Math.floor(s % 3600 / 60)).padStart(2, '0')}m` : `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, '0')}s`;
+  const timers = $$('[data-run]');
+  setInterval(() => timers.forEach(t => { const v = +t.dataset.run + 1; t.dataset.run = v; t.textContent = fmt(v); }), 1000);
+  $('#laptop').addEventListener('click', (e) => {
+    const on = e.currentTarget.getAttribute('aria-checked') !== 'true';
+    e.currentTarget.setAttribute('aria-checked', String(on));
+    $('#laptop-note').innerHTML = on ? '<b>Laptop open.</b> Sessions run in the cloud either way; your machine is just a window.' : '<b>Laptop closed.</b> Still running: two agents are working and one is waiting for your reply on your phone.';
+  });
+
+  /* cost calculator: numbers are the graphic */
+  const hours = $('#hours');
+  function calc() {
+    const h = +hours.value, total = h * 22, billed = Math.max(0, total - 10), cost = billed * 0.09;
+    $('#total').textContent = '$' + cost.toFixed(2);
+    $('#h-total').textContent = total + ' h'; $('#h-billed').textContent = billed + ' h';
+    hours.setAttribute('aria-valuetext', `${h} hours a day, about $${cost.toFixed(2)} a month`);
+  }
+  hours.addEventListener('input', calc); calc();
+
+  /* FAQ */
+  $$('.qa button').forEach(b => b.addEventListener('click', () => b.setAttribute('aria-expanded', String(b.getAttribute('aria-expanded') !== 'true'))));
+})();
+</script>
+
+<script type="module">
+/* 3D keyring: procedural, brand materials, one idle sway + pointer tilt, paused offscreen, still frame for reduced motion. */
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const wrap = document.getElementById('ring3d'), canvas = wrap.querySelector('canvas');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); } catch { /* keep SVG fallback */ }
+if (renderer) {
+  await document.fonts.load('600 96px "Google Sans Flex"').catch(() => {});   // labels are painted with the brand face
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  const scene = new THREE.Scene();
+  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 60);
+  camera.position.set(0, 0.3, 12.5); camera.lookAt(0, -0.45, 0);
+  const sun = new THREE.DirectionalLight(0xfff1dc, 1.4); sun.position.set(4, 6, 7); scene.add(sun);
+
+  const steel = new THREE.MeshPhysicalMaterial({ color: 0xC4CBC6, metalness: 1, roughness: 0.3 });
+  const brass = new THREE.MeshPhysicalMaterial({ color: 0xD4A72C, metalness: 1, roughness: 0.34 });
+  const plastic = (c) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 0, roughness: 0.46, clearcoat: 0.35, clearcoatRoughness: 0.45 });
+
+  const rig = new THREE.Group(); rig.position.y = 1.55; scene.add(rig);
+  const R = 1.05;
+  rig.add(new THREE.Mesh(new THREE.TorusGeometry(R, 0.075, 28, 160), steel));
+  const loop = new THREE.Mesh(new THREE.TorusGeometry(R, 0.075, 28, 80, Math.PI * 0.42), steel);
+  loop.position.z = 0.13; loop.rotation.z = Math.PI * 0.28; rig.add(loop);
+
+  // Rounded fob with a hole, pivot at the hole.
+  function fobGeometry(w, h, r, depth) {
+    const s = new THREE.Shape(), x = -w / 2, y = -h;
+    s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r);
+    s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r); s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y);
+    const hole = new THREE.Path(); hole.absarc(0, -0.36, 0.17, 0, Math.PI * 2, true); s.holes.push(hole);
+    const g = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.06, bevelSegments: 5, curveSegments: 36 });
+    g.translate(0, 0.36, -depth / 2); return g;
+  }
+  function label(text, color) {
+    const c = document.createElement('canvas'); c.width = 512; c.height = 256;
+    const x = c.getContext('2d'); x.fillStyle = color; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = '600 96px "Google Sans Flex", "Google Sans", sans-serif'; x.fillText(text, 256, 132);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+    return new THREE.Mesh(new THREE.PlaneGeometry(1.18, 0.59), new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: 0.6, metalness: 0 }));
+  }
+  function keyGeometry() {
+    const Rb = 0.52, w = 0.14, d = Math.asin(w / Rb), yTop = -Rb * Math.cos(d), s = new THREE.Shape();
+    s.moveTo(w, yTop); s.absarc(0, 0, Rb, -Math.PI / 2 + d, -Math.PI / 2 - d + Math.PI * 2, false);
+    s.lineTo(-w, -2.35); s.lineTo(-w + 0.07, -2.46); s.lineTo(w, -2.46);
+    s.lineTo(w, -2.3); s.lineTo(w + 0.15, -2.2); s.lineTo(w + 0.15, -2.04); s.lineTo(w, -1.94);
+    s.lineTo(w + 0.11, -1.82); s.lineTo(w + 0.11, -1.68); s.lineTo(w, -1.58); s.lineTo(w, yTop);
+    const hole = new THREE.Path(); hole.absarc(0, 0.2, 0.17, 0, Math.PI * 2, true); s.holes.push(hole);
+    const g = new THREE.ExtrudeGeometry(s, { depth: 0.1, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 4, curveSegments: 40 });
+    g.translate(0, -0.2, -0.05); return g;
+  }
+
+  const items = [];
+  function hang(mesh, angleDeg, z, yaw, tilt) {
+    const a = angleDeg * Math.PI / 180, pivot = new THREE.Group();
+    pivot.position.set(R * Math.cos(a), R * Math.sin(a), z); pivot.rotation.set(0, yaw, tilt);
+    pivot.add(mesh); rig.add(pivot); items.push({ pivot, base: tilt, phase: items.length * 1.7 });
+  }
+  const fob = fobGeometry(1.5, 2.05, 0.46, 0.2);
+  const tags = [['Claude', 0x16211C, '#EEF2EF'], ['ChatGPT', 0xD3DFD7, '#16211C'], ['Gemini', 0xFFFFFF, '#16211C']];
+  const angles = [-150, -92, -34], yaws = [0.42, 0.0, -0.42], tilts = [-0.62, 0.0, 0.62];
+  tags.forEach(([t, c, ink], i) => {
+    const g = new THREE.Group(), body = new THREE.Mesh(fob, plastic(c)); g.add(body);
+    const l = label(t, ink); l.position.set(0, -1.28, 0.165); g.add(l);
+    hang(g, angles[i], [0.22, 0.04, -0.14][i], yaws[i], tilts[i]);
+  });
+  hang(new THREE.Mesh(keyGeometry(), brass), -118, 0.36, 0.2, -0.28);
+
+  const resize = () => { const w = wrap.clientWidth, h = wrap.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
+  new ResizeObserver(() => { resize(); if (!running) renderer.render(scene, camera); }).observe(wrap); resize();
+
+  let px = 0, py = 0, tx = 0, ty = 0, running = false, visible = true;
+  addEventListener('pointermove', (e) => { tx = (e.clientX / innerWidth - 0.5) * 2; ty = (e.clientY / innerHeight - 0.5) * 2; }, { passive: true });
+  const clock = new THREE.Clock();
+  function frame() {
+    if (!running) return;
+    const t = clock.getElapsedTime();
+    px += (tx - px) * 0.05; py += (ty - py) * 0.05;
+    rig.rotation.y = px * 0.35 + Math.sin(t * 0.35) * 0.12;
+    rig.rotation.x = py * 0.12;
+    for (const it of items) it.pivot.rotation.z = it.base + Math.sin(t * 0.9 + it.phase) * 0.045;
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+  const start = () => { if (!running && visible && !reduce && !document.hidden) { running = true; clock.getDelta(); requestAnimationFrame(frame); } };
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (!visible) running = false; else start(); }).observe(wrap);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) running = false; else start(); });
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(() => wrap.classList.add('live'));
+  start();
+}
+</script>
+</body>
+</html>

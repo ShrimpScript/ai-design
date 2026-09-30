@@ -20,10 +20,12 @@ function load() {
 const pw = load();
 const UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 design-recon/1.0';
 
+// SwiftShader keeps WebGL working in headless (3D heroes must render in shots, not fall back silently).
+const ARGS = ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist'];
 export async function launch() {
-  try { return await pw.chromium.launch(); } catch (e) {
+  try { return await pw.chromium.launch({ args: ARGS }); } catch (e) {
     for (const p of [process.env.CHROMIUM_PATH, '/opt/pw-browsers/chromium', '/usr/bin/chromium', '/usr/bin/google-chrome'])
-      if (p && existsSync(p)) { try { return await pw.chromium.launch({ executablePath: p }); } catch {} }
+      if (p && existsSync(p)) { try { return await pw.chromium.launch({ executablePath: p, args: ARGS }); } catch {} }
     throw e;
   }
 }

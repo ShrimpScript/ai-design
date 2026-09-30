@@ -6,11 +6,13 @@
 //        [--bg #0E1628 --fg #E6ECF5] [--weight 620] [--out .design/specimen.jpg]
 //
 // ":wdth=112" / ":opsz=48" set variable axes for the headline. Prints each family's tier (default/saturated/novelty).
+import './lib/net.mjs';
 import { pathToFileURL } from 'node:url';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { launch } from './lib/pw.mjs';
-import { fontTier } from './lib/fonts.mjs';
+import { fontTier, isRound } from './lib/fonts.mjs';
+import { googleLinks } from './lib/gfonts.mjs';
 
 const argv = process.argv.slice(2);
 const opt = (n, d) => { const i = argv.indexOf(n); return i < 0 ? d : argv[i + 1]; };
@@ -20,16 +22,15 @@ const head = opt('--head', 'The quick brown fox jumps over the lazy dog'), body 
 const bg = opt('--bg', '#ffffff'), fg = opt('--fg', '#111111'), weight = opt('--weight', '600'), out = opt('--out', '.design/specimen.jpg');
 
 const parsed = fams.map(f => { const [name, ax] = f.split(':'); const axes = Object.fromEntries((ax || '').split(',').filter(Boolean).map(p => p.split('='))); return { name, axes }; });
-const q = [...new Set(parsed.map(p => p.name))].map(n => `family=${n.replace(/ /g, '+')}:wght@300..800`).join('&');
-const css = `https://fonts.googleapis.com/css2?${q}&display=swap`;
+const links = (await googleLinks(parsed.map(p => p.name))).map(h => `<link rel="stylesheet" href="${h}">`);
 const rows = parsed.map(({ name, axes }) => {
   const vs = Object.entries(axes).map(([k, v]) => `"${k}" ${v}`).join(',');
   const t = fontTier(name);
-  return `<section><small>${name}${vs ? ' · ' + vs : ''}${t ? ` · <b>${t.toUpperCase()}</b>` : ''}</small>
+  return `<section><small>${name}${vs ? ' · ' + vs : ''}${t ? ` · <b>${t.toUpperCase()}</b>` : isRound(name) ? ' · ROUND ✓' : ''}</small>
   <h1 style="font-family:'${name}',sans-serif;${vs ? `font-variation-settings:${vs};` : ''}">${head}</h1>
   <p style="font-family:'${name}',sans-serif">${body}</p></section>`;
 }).join('');
-const html = `<!doctype html><link rel="stylesheet" href="${css}"><style>body{margin:0;padding:24px;background:${bg};color:${fg};font-family:system-ui}
+const html = `<!doctype html>${links.join('')}<style>body{margin:0;padding:24px;background:${bg};color:${fg};font-family:system-ui}
 section{padding:14px 0;border-bottom:1px solid color-mix(in srgb,${fg} 18%,transparent)}small{font:12px ui-monospace,monospace;opacity:.7}b{color:#e0533f}
 h1{margin:4px 0 0;font-size:50px;line-height:1.04;letter-spacing:-.02em;font-weight:${weight};text-wrap:balance}p{margin:8px 0 0;font-size:17px;line-height:1.5;max-width:62ch;opacity:.85;font-variant-numeric:tabular-nums}</style>${rows}`;
 mkdirSync(path.dirname(out), { recursive: true });

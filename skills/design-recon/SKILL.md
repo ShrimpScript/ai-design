@@ -51,7 +51,11 @@ Load `references/contexts.md` for the brief's context (SaaS/product, brand/marke
 - **The one memorable thing**: where boldness is spent. Everything else stays quiet.
 - **Slop pre-check**: go through `references/slop.md` § Plan. Rewrite any choice you'd make for *any* similar product.
 
-Hero, scroll transitions, page transitions, and in-page updates: `references/patterns.md` (recipes plus budgets). Fonts: `references/fonts.md`. It has tiers for AI-default, trend-saturated, and novelty/cliché faces, plus less-worn picks by job. Self-host with `node scripts/fetch-font.mjs "Family:wght@400..700" --out public/fonts`.
+**Brand (when none exists, or the surface is brand-led):** follow `references/brand.md`. Metaphor from the product's mechanism → 2–4 mark candidates rendered at 16–96px → wordmark and lockups → palette as roles → 1–2 graphic devices. Write `.design/brand.json` and run `node scripts/brandboard.mjs .design/brand.json`. That gives one board image, `og.png`, `favicon.svg`, and `tokens.css`, and prints the palette audit. Check any palette alone with `node scripts/palette.mjs tokens.css`.
+**3D object** (when an object explains the product): `references/3d.md`. Procedural Three.js first, then CC0 glTF, then pre-rendered. It needs a static fallback, reduced motion support, and a performance budget.
+**Type choice:** render candidates with `node scripts/specimen.mjs "Family" … --head "<real headline>" --bg --fg`. The house default is round, open, regular width, weight ≥ 400 (Google Sans Flex with `ROND` first).
+
+Hero, scroll transitions, page transitions, and in-page updates: `references/patterns.md` (recipes plus budgets). Fonts: `references/fonts.md`. It has the house round preference, tiers for AI-default, trend-saturated, condensed, and novelty/cliché faces, Google and Anthropic-style fallbacks, and picks by job. Self-host with `node scripts/fetch-font.mjs "Family:wght@400..700" --out public/fonts`.
 
 ## 5. Build, then verify (every time, all modes)
 
@@ -60,6 +64,7 @@ Build with real content from the brief (no lorem, fake metrics, or stock avatars
 Then run both:
 ```
 node scripts/slop-lint.mjs src/            # static tells; HIGH findings must be fixed
+node scripts/palette.mjs src/styles.css     # awkward or generated colour combinations
 node scripts/shoot.mjs http://localhost:3000 --label v1   # or a .html path; add --click "Open drawer" for states
 ```
 View `sheet.jpg`. Fix every item `report.md` lists: overflow, contrast, focus, fonts that didn't load or are flagged by tier, reduced motion, and radius or type-size sprawl. Then critique against the brief: does it look like *this* product, or like any product? Remove one accessory.
