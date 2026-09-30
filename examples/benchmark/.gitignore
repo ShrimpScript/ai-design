@@ -1,9 +1,9 @@
 # keep outputs, briefs, digests and judged screenshots; drop bulky raw frames
-A/.design/recon/*/*.jpg
-!A/.design/recon/*/sheet.jpg
-A/.design/recon/*/svg/
-A/.design/shots/*/*.jpg
-!A/.design/shots/*/sheet.jpg
+A*/.design/recon/*/*.jpg
+!A*/.design/recon/*/sheet.jpg
+A*/.design/recon/*/svg/
+A*/.design/shots/*/*.jpg
+!A*/.design/shots/*/sheet.jpg
 shots/home/
-A/.claude/
+A*/.claude/
 B/.claude/
